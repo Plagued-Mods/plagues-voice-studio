@@ -133,11 +133,22 @@ if (-not $SkipInstaller) {
         }
         & $iscc.Source installer.iss
         Assert-Success 'Inno Setup compilation failed'
-        # With disk spanning, a full-offline setup consists of an EXE and BIN slices.
-        $setupFiles = @(Get-ChildItem dist-installer -File | Where-Object { $_.Extension -in '.exe', '.bin' })
-        if (-not $setupFiles) { throw 'Inno Setup reported success but generated no installer.' }
-        Copy-Item -LiteralPath $setupFiles.FullName -Destination artifacts\ -Force
-        Write-Host 'Installer files are in artifacts\. Keep Setup.exe and every Setup-*.bin together.'
+        # Prevent stale multi-disk installers from leaking into a new artifact.
+        Get-ChildItem artifacts -Filter 'PlaguesVoiceStudio030Experimental-Setup-*' -File |
+            Remove-Item -Force
+
+        # Inno Setup 6.5.2+ builds a self-contained EXE under ~4 GB without
+        # media slices. Abort if disk spanning returns or the build is incomplete.
+        $setups = @(Get-ChildItem dist-installer -Filter 'PlaguesVoiceStudio030Experimental-Setup-*.exe' -File)
+        $slices = @(Get-ChildItem dist-installer -Filter '*.bin' -File)
+        if ($setups.Count -ne 1 -or $slices.Count -ne 0) {
+            throw "Expected ONE self-contained setup EXE and ZERO BIN slices, found $($setups.Count) EXE(s) and $($slices.Count) slice(s)."
+        }
+        if ($setups[0].Length -ge 4000000000) {
+            throw "Setup EXE is over the supported single-file size budget. Use a smaller model bundle or redesign delivery, never silently enable disk spanning."
+        }
+        Copy-Item -LiteralPath $setups[0].FullName -Destination artifacts\ -Force
+        Write-Host "Standalone installer: $($setups[0].Name) ($($setups[0].Length) bytes). No extra disks or BIN files required."
     }
 }
 Write-Host 'Done. Target Windows machines do NOT require Python, pip or network access to synthesize speech in full-offline mode.'

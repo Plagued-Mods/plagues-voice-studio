@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "status": "metadata-recorded; binary media packaged for upload, not yet checked into this repository",
+  "source": "Three recordings supplied by the project creator for the Plagued Mods website showcase",
+  "processing": "Web MP3s encoded from the original WAVs with ffmpeg/libmp3lame; no speech regeneration",
+  "samples": [
+    {
+      "id": "chatterbox-turbo-narration",
+      "engine": "Chatterbox Turbo",
+      "language": "English",
+      "wav": "chatterbox-turbo-narration.wav",
+      "mp3": "chatterbox-turbo-narration.mp3",
+      "durationSeconds": 9.04,
+      "wavSha256": "1a2b01ef2569ef0a8223847646e7d79c655e79ce45b24a6419f82dfd24eee9ba",
+      "mp3Sha256": "368980f753e874e48d25c3ffdad61911a9987fdba5612792c539346f36cbf1d2"
+    },
+    {
+      "id": "qwen3-06b-voice-clone",
+      "engine": "Qwen3-TTS 0.6B Base",
+      "language": "English",
+      "wav": "qwen3-06b-voice-clone.wav",
+      "mp3": "qwen3-06b-voice-clone.mp3",
+      "durationSeconds": 9.2,
+      "wavSha256": "348bc6dd154b6520389c855d3f920ed388ff4ba17ab66bf5fd7b62a7499c0357",
+      "mp3Sha256": "756fde9789d0a9f9f9831cb6f946b2e387cedca448846a43a6e54e529e7da350"
+    },
+    {
+      "id": "qwen3-06b-spanish",
+      "engine": "Qwen3-TTS 0.6B Base",
+      "language": "Spanish",
+      "wav": "qwen3-06b-spanish.wav",
+      "mp3": "qwen3-06b-spanish.mp3",
+      "durationSeconds": 7.84,
+      "wavSha256": "48e963b8ea87ee7c870f7dc268771d63ad6744272477745a62c95cc825addc00",
+      "mp3Sha256": "f9d865437e4aac132c29ad9e740b91dcf7641829dccc397cbdce1be8ada3f6b8"
+    }
+  ]
+}
