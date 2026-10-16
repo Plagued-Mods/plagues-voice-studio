@@ -15,12 +15,13 @@ from PyQt6.QtWidgets import (
 TOPICS: tuple[tuple[str, str, str], ...] = (
     ('Getting started', 'quick start narrator beginner generate', '''
 <h2>Getting started</h2>
-<p>Plague's Voice Studio is a local narration workstation. No account is required to write scripts or manage your recordings.</p>
+<p>Plague's Voice Studio is a local voice-production workstation with supported Chatterbox and Qwen3-TTS speech generation. Write scripts, manage voice references, and review recordings without an application account.</p>
 <ol><li><b>Choose a model</b> in Narration Studio. For a quick CPU test, try Nano.</li>
 <li><b>Choose a voice</b>, if that model requires a reference recording.</li>
 <li><b>Write or import</b> your script. Short paragraphs work well for spoken delivery.</li>
 <li><b>Generate now</b> or add multiple jobs to the Batch Queue.</li>
 <li><b>Review</b> the result in Export Library, then send it to Bethesda Voice Export if needed.</li></ol>
+<h3>Qwen3-TTS voice cloning</h3><p>For Qwen3-TTS, open the currently named <b>Optional Engine Lab</b> tab, configure the separate Qwen Python environment, choose your reference voice and model, and generate speech. The generated WAV joins Export Library and can be sent to Bethesda Voice Export. IndexTTS 2.5 remains an experimental alternative.</p>
 <h3>Offline models</h3><p>Models bundled during a <b>FullOffline</b> build are available without downloads. Otherwise the program may download model weights on first use. The build option and the model chosen in the GUI are separate.</p>
 '''),
     ('Models and voices', 'nano turbo original english multilingual tags reference expressive clone', '''
@@ -34,11 +35,12 @@ TOPICS: tuple[tuple[str, str, str], ...] = (
 <p><b>References:</b> Prefer 6–20 seconds of clean, single-speaker audio with no music. Only use recordings you own or have permission to clone.</p>
 <p>Legacy voice references from v0.1.x are offered read-only. The current app stores newly imported recordings in its own data directory.</p>
 <p><b>Original English controls:</b> Start around expressiveness 0.50 and CFG 0.50, then make small adjustments while listening.</p>
+<h3>Qwen3-TTS</h3><p>Qwen3-TTS is a supported, working voice-cloning engine running in a separately configured Python environment. The interface offers 0.6B Base and 1.7B Base models and multiple languages. Real WAV generation with the 0.6B Base model has been confirmed on Windows using CPU inference; the larger model and other hardware configurations need separate validation.</p>
 '''),
     ('Script tags', 'pause rate volume emphasis laugh chuckle sigh cough syntax markup', '''
 <h2>Script tags and markup</h2>
 <h3>Handled by Plague's Voice Studio</h3>
-<p>These directives are interpreted by the <b>application</b> and work with all supported models. The model does not pronounce the directives.</p>
+<p>These directives are interpreted by the <b>Chatterbox Narration Studio</b> workflow. The model does not pronounce the directives. The separate Qwen3-TTS and experimental IndexTTS workflows currently receive plain text and do not process this markup.</p>
 <pre>[pause:0.8s]
 [pause:800ms]
 [rate:0.90]Speak slowly.[/rate]
@@ -65,6 +67,7 @@ TOPICS: tuple[tuple[str, str, str], ...] = (
 <li>Supply the correctly licensed external FaceFX, Fonix, xWMA and optionally FFmpeg tools.</li>
 <li>Check the destination preview and approve any replacement.</li></ol>
 <p><b>Expected path:</b> <code>Sound/Voice/&lt;OwningPlugin&gt;/&lt;VoiceType&gt;/&lt;Response&gt;.fuz</code></p>
+<p>WAV recordings created with Qwen3-TTS can also be sent to this export workflow from the engine results panel.</p>
 <p><b>Important:</b> Real LIP and XWM generation depends on compatible external tools; structurally valid FUZ packing does not guarantee in-game audio or lip-sync success. Test in the target game.</p>
 '''),
     ('Build and troubleshooting', 'install windows offline build model download paging error 1455 python exe', '''
@@ -79,33 +82,40 @@ TOPICS: tuple[tuple[str, str, str], ...] = (
 <p><b>A Python traceback when opening a dialog:</b> rebuild the executable after source edits. An old desktop shortcut may still point to an older version.</p>
 <p><b>First generation seems slow:</b> first use may load or download model weights and initialize PyTorch. CPU inference can be significantly slower than GPU inference.</p>
 <p><b>Windows AMD GPU:</b> this build does not automatically enable AMD acceleration. Auto selects CUDA only where supported; otherwise it uses CPU.</p>
+<p><b>Qwen3-TTS runtime:</b> install it in its own Python environment and use <b>Test selected engine</b> to verify imports. Loading cached model weights and CPU speech generation can take time. Generation progress, errors, and saved logs appear in the engine diagnostics panel.</p>
+<p><b>SoX warning:</b> if SoX is already installed but not found, run <code>sox --version</code> in a new terminal and ensure the directory containing <code>sox.exe</code> is on PATH. The warning is not always fatal to generation.</p>
 '''),
     ('Privacy and licenses', 'permissions watermark local data licensing credits copyright internet', '''
 <h2>Privacy, permissions and licenses</h2>
-<p>Speech synthesis and voice-reference handling are local after required models have been downloaded. Initial weight retrieval may contact Hugging Face or other upstream model providers.</p>
+<p>Chatterbox and Qwen3-TTS synthesize speech locally after their required models have been downloaded. Initial model retrieval may contact Hugging Face or other upstream model providers. Qwen3-TTS uses its own local Python environment.</p>
 <p>Only clone a person's voice with their permission. <b>Chatterbox's upstream watermarking has not been removed.</b></p>
-<p>Chatterbox TTS is developed by <b>Resemble AI</b>; third-party libraries, model weights and game conversion utilities retain their individual terms. See <code>THIRD_PARTY_NOTICES.md</code> in the project.</p>
+<p>Chatterbox TTS is developed by <b>Resemble AI</b> and Qwen3-TTS by the Qwen team. IndexTTS 2.5 remains experimental. Each upstream library, model and game conversion utility retains its individual terms. See <code>THIRD_PARTY_NOTICES.md</code> in the project.</p>
 <p><a href="https://github.com/resemble-ai/chatterbox">Resemble AI's Chatterbox source</a></p>
 '''),
-    ('Optional engines and A/B testing', 'experimental qwen indextts engine lab compare character profiles independent python', '''
-<h2>Optional Engine Lab (experimental)</h2>
-<p>The stable Narration Studio continues to use Chatterbox. Optional Engine Lab offers
-Qwen3-TTS and IndexTTS 2.5 as separate inference processes. They are <b>not bundled</b>
-and do not share Python packages with Chatterbox.</p>
-<ol><li>Install Qwen3-TTS or IndexTTS according to its upstream instructions, using a separate Python environment.</li>
-<li>In the Engine Lab, choose its Python executable. IndexTTS additionally needs the official repository and checkpoints directory.</li>
-<li>Choose <b>Test selected engine</b> to check imports and CUDA availability.</li>
-<li>Select a voice reference, a model, a language and your narration text.</li>
-<li>Use <b>Generate</b>, or <b>Compare Qwen + IndexTTS</b> to render the same text with both.</li></ol>
-<p>Outputs are new WAV files with JSON generation sidecars and are visible in Export Library.
-The generated WAV can also be sent to Bethesda Export. Character profiles remember engine,
-reference voice, language, emotion and settings; they do not duplicate or alter voice files.</p>
-<p><b>Important:</b> These adapters are experimental and have not been verified on every
-hardware configuration. Windows AMD GPU acceleration is not established. Initial model
-weights may download in the optional engine environment, using the user's disk space.
-IndexTTS uses a separate Bilibili model-use license. Confirm your rights before use.</p>
-<p><a href="https://github.com/QwenLM/Qwen3-TTS">Qwen3-TTS official installation guide</a><br>
-<a href="https://github.com/index-tts/index-tts">IndexTTS official installation guide</a></p>
+    ('Qwen3-TTS and experimental IndexTTS', 'qwen stable cloning indextts experimental engine lab comparison character profiles independent python', '''
+<h2>Qwen3-TTS and IndexTTS 2.5</h2>
+<p><b>Qwen3-TTS is a supported speech engine.</b> Real 0.6B Base model voice generation and WAV export have been confirmed on Windows CPU. Chatterbox also remains fully supported. <b>IndexTTS 2.5 is experimental</b> and has not been verified on the current Windows/AMD configuration.</p>
+<p>These engines run in separately configured Python processes. Their packages and model weights are not bundled with the application or mixed with Chatterbox dependencies. The current interface tab is labeled <b>Optional Engine Lab</b>.</p>
+<ol><li>Install the desired engine according to its upstream instructions, using a separate Python environment.</li>
+<li>In the engine tab, enter the interpreter path. IndexTTS also needs its official repository and checkpoints directory.</li>
+<li>Select <b>Test selected engine</b> to check imports; an import test does not prove live synthesis.</li>
+<li>Choose a reference voice, a Base model, a language, and your narration text. For Qwen3, an accurate reference transcript can help cloning quality.</li>
+<li>Select <b>Generate with selected engine</b>. The <b>Compare Qwen + IndexTTS</b> action requires both engines to be installed and configured.</li></ol>
+<p>Generated WAV recordings include JSON metadata, appear in Export Library, and can be sent to Bethesda Voice Export. Reusable character profiles retain per-engine settings and reference-voice choices without modifying the voice files. The engine view provides live progress, elapsed time, cancellation, and diagnostic logs.</p>
+<p><b>Current limitations:</b> Qwen3 and IndexTTS workflows accept plain text; Chatterbox narration tags and its batch/MP3 workflow are not applied. Windows AMD GPU acceleration is not established, and CPU generation may take time. The larger Qwen3 model and IndexTTS are not covered by the confirmed 0.6B Base CPU generation test. IndexTTS uses a separate Bilibili model-use license.</p>
+<p><a href="https://github.com/QwenLM/Qwen3-TTS">Qwen3-TTS official installation guide</a></p>
+<p><a href="https://github.com/index-tts/index-tts">IndexTTS official installation guide</a></p>
+'''),
+    ('Support Project Development', 'support sponsor sponsorship funding donate donate development github patreon paypal', '''
+<h2>Support Project Development</h2>
+<p>Plague's Voice Studio is an independently developed application created by <b>Kaotick Jay</b>. If the studio has been useful to you, voluntary sponsorship helps support maintenance, documentation, bug fixes, and future improvements.</p>
+<p><b>Choose a way to support the project:</b></p>
+<ul>
+<li><a href="https://github.com/sponsors/kaotickj">Sponsor on GitHub</a></li>
+<li><a href="https://www.patreon.com/KaotickJay">Support on Patreon</a></li>
+<li><a href="https://paypal.me/kaotickj">Contribute through PayPal</a></li>
+</ul>
+<p>Sponsorship is always optional. The application's local voice-production features do not require a contribution.</p>
 '''),
 )
 
