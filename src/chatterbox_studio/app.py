@@ -82,7 +82,7 @@ def _load_pixmap(name: str, width: int | None = None, height: int | None = None)
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(f"Plague's Voice Studio {__version__} (Experimental)")
+        self.setWindowTitle(f"Plague's Voice Studio {__version__}")
         self.setWindowIcon(_application_icon())
         self.resize(1330, 880)
         self.setMinimumSize(940, 650)
@@ -131,7 +131,7 @@ class MainWindow(QMainWindow):
         title.setObjectName('sectionTitle')
         title.setStyleSheet('font-size: 23px; letter-spacing: 1px;')
         title_block.addWidget(title)
-        tagline = QLabel('CREATED BY KAOTICK JAY   |   MULTI-ENGINE EXPERIMENTAL BRANCH')
+        tagline = QLabel('CREATED BY KAOTICK JAY   |   LOCAL AI VOICE PRODUCTION')
         tagline.setObjectName('mutedText')
         title_block.addWidget(tagline)
         header.addLayout(title_block)
@@ -347,7 +347,7 @@ class MainWindow(QMainWindow):
         self.export_browser = ExportBrowser(self)
         self.tabs.addTab(self.export_browser, "Export Library")
         self.engine_lab = EngineLab(self)
-        self.tabs.addTab(self.engine_lab, "Optional Engine Lab")
+        self.tabs.addTab(self.engine_lab, "Voice Engines")
 
         self.help_center = HelpCenter(self)
         self.tabs.addTab(self.help_center, 'Help')
