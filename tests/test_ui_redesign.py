@@ -17,6 +17,8 @@ def test_about_dialog_imports_qdialog_and_uses_nonmodal_show():
     assert "'plagues_about_dialog'" in module
     assert "'about_logo'" in module
     assert 'Copy diagnostics' in module
+    assert 'Voice Engines' in module
+    assert 'IndexTTS 2.5 remains experimental' in module
 
 
 def test_help_topics_are_searchable_without_models_or_network():
@@ -38,7 +40,20 @@ def test_help_topics_are_searchable_without_models_or_network():
     assert 'https://www.patreon.com/KaotickJay' in sponsorship
     assert 'https://paypal.me/kaotickj' in sponsorship
     assert any('Qwen3-TTS' in topics[i][0] for i in matches('qwen'))
+    assert any('Voice Engines' in html for _, _, html in topics)
+    assert not any('Optional Engine Lab' in html for _, _, html in topics)
     assert matches('thereisnomatchingtopicname') == []
+
+
+def test_engine_lab_promotes_qwen_without_changing_settings_paths():
+    app = (SRC / 'app.py').read_text(encoding='utf-8')
+    engine = (SRC / 'engine_lab.py').read_text(encoding='utf-8')
+    assert 'self.tabs.addTab(self.engine_lab, "Voice Engines")' in app
+    assert 'VOICE ENGINES' in engine
+    assert 'Chatterbox and Qwen3-TTS are supported speech engines' in engine
+    assert "if identifier == 'index25'" in engine
+    assert 'PlaguesVoiceStudio030Experimental' in app
+    assert "self.setObjectName('engine_lab')" in engine
 
 
 def test_packaged_smoke_exercises_about_and_help():
