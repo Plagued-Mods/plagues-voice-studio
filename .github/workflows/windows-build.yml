@@ -6,9 +6,30 @@ on:
       - develop
     tags:
       - 'v*'
+    # Documentation, README screenshots and audio-showcase copy don't change
+    # the Windows app. Avoid 20+ minute rebuilds for those commits.
+    # Path filters apply to branch pushes; release tag builds still run.
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'models/**'
+      - 'assets/plagues-voice-studio-*'
+      - 'assets/version_info.txt'
+      - 'launcher.py'
+      - 'optional_engine_runner.py'
+      - 'ChatterboxStudio.spec'
+      - 'installer.iss'
+      - 'pyproject.toml'
+      - 'tests/**'
+      - 'OPTIONAL_ENGINES.md'
+      - 'THIRD_PARTY_NOTICES.md'
+      - 'LICENSE'
+      - '.github/workflows/windows-build.yml'
 concurrency:
   group: pvs-windows-${{ github.ref }}
-  cancel-in-progress: true
+  # A newer push must not destroy a nearly completed Windows installer build.
+  # GitHub may replace a pending (not running) build; the running job continues.
+  cancel-in-progress: false
 
 jobs:
   windows:
