@@ -49,20 +49,19 @@ jobs:
       - name: Build offline Nano portable and installer
         shell: pwsh
         run: ./scripts/build_windows.ps1 -Models nano
-      # Inno Setup uses DiskSpanning=yes. Its setup EXE alone is incomplete:
-      # all accompanying .bin slices must be distributed in the same folder.
-      - name: Verify complete installer payload
+      # Reject multi-disk output. Users should never see an Insert Disk prompt.
+      - name: Verify standalone installer
         shell: pwsh
         run: |
           $setups = @(Get-ChildItem artifacts -Filter 'PlaguesVoiceStudio030Experimental-Setup-*.exe' -File)
-          $slices = @(Get-ChildItem artifacts -Filter 'PlaguesVoiceStudio030Experimental-Setup-*.bin' -File)
-          if ($setups.Count -ne 1) {
-            throw "Expected exactly one Inno Setup executable; found $($setups.Count)."
+          $slices = @(Get-ChildItem artifacts -Filter '*.bin' -File)
+          if ($setups.Count -ne 1 -or $slices.Count -ne 0) {
+            throw "Expected one standalone setup EXE with no BIN slices; got $($setups.Count) EXE(s), $($slices.Count) BIN(s)."
           }
-          if ($slices.Count -lt 1) {
-            throw 'Installer data slices (.bin) are missing. Refusing to publish an incomplete installer.'
+          if ($setups[0].Length -ge 4000000000) {
+            throw "Standalone installer is too large to ship as a single EXE."
           }
-          Write-Host "Validated $($setups.Count) setup EXE and $($slices.Count) BIN slice(s)."
+          Write-Host "Verified single-file installer: $($setups[0].Name) ($($setups[0].Length) bytes)."
       - name: Upload portable Windows package
         uses: actions/upload-artifact@v4
         with:
@@ -72,8 +71,45 @@ jobs:
       - name: Upload complete Windows installer
         uses: actions/upload-artifact@v4
         with:
-          name: PlaguesVoiceStudio-develop-Windows-Installer
-          # Match the EXE plus every -1.bin, -2.bin, ... disk-spanning slice.
-          # GitHub Actions retains these files in one downloadable ZIP.
-          path: artifacts/PlaguesVoiceStudio030Experimental-Setup-*
+          name: PlaguesVoiceStudio-develop-Windows-Standalone-Installer
+          path: artifacts/PlaguesVoiceStudio030Experimental-Setup-*.exe
           if-no-files-found: error
+
+  # Install on a fresh Windows runner, not just compile on the build machine.
+  installer_smoke:
+    name: Fresh Windows installer smoke test
+    runs-on: windows-2022
+    needs: windows
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: PlaguesVoiceStudio-develop-Windows-Standalone-Installer
+          path: installer-payload
+      - name: Install standalone EXE silently and verify target files
+        shell: pwsh
+        run: |
+          $exes = @(Get-ChildItem installer-payload -Filter 'PlaguesVoiceStudio030Experimental-Setup-*.exe' -File)
+          $bins = @(Get-ChildItem installer-payload -Filter '*.bin' -File)
+          if ($exes.Count -ne 1 -or $bins.Count -ne 0) {
+            throw 'Expected one standalone setup EXE with no external disk slices.'
+          }
+          $target = Join-Path $env:RUNNER_TEMP 'PVS-Single-File-Install'
+          $logFile = Join-Path $env:RUNNER_TEMP 'pvs-setup-smoke.log'
+          $args = @('/SP-', '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=$target", "/LOG=$logFile")
+          $proc = Start-Process -FilePath $exes[0].FullName -ArgumentList $args -PassThru
+          if (-not $proc.WaitForExit(20 * 60 * 1000)) {
+            $proc.Kill()
+            throw 'Silent installer timed out; do not publish this installer.'
+          }
+          if ($proc.ExitCode -ne 0) {
+            if (Test-Path $logFile) { Get-Content $logFile -Tail 60 }
+            throw "Silent installer failed with exit code $($proc.ExitCode)."
+          }
+          $app = Join-Path $target 'PlaguesVoiceStudio030Experimental.exe'
+          if (-not (Test-Path $app)) {
+            throw "Install succeeded but application is missing at $app."
+          }
+          Write-Host "Standalone installation verified: $app"

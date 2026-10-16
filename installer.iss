@@ -20,10 +20,10 @@ OutputDir=dist-installer
 OutputBaseFilename=PlaguesVoiceStudio030Experimental-Setup-{#AppVersion}
 Compression=lzma2
 SolidCompression=yes
-; Full offline builds exceed the single-executable practical size limit.
-; Keep all generated Setup-*.bin slices beside the setup EXE.
-DiskSpanning=yes
-DiskSliceSize=2100000000
+; Inno Setup 6.5.2+ supports a single setup EXE up to nearly 4 GB.
+; This ~3 GB Nano installer must NEVER request additional media.
+; Re-enable disk spanning only if the installer grows beyond that limit.
+DiskSpanning=no
 WizardStyle=modern
 SetupIconFile=assets\plagues-voice-studio.ico
 ArchitecturesAllowed=x64compatible
