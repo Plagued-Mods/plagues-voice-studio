@@ -110,6 +110,19 @@ The Python source and protocol are unit-tested in a Linux container without PyQt
 
 **Compatibility note:** Existing v0.3.0-alpha4 executable names, settings IDs and user-data folders still contain `Experimental` for compatibility with installed engine runtimes and saved voices. Renaming the on-screen engine tab does not move user data or change the release version. Qwen3-TTS 0.6B Base has been validated; the complete application still requires release testing.
 
+## Model Manager: install models from the GUI
+
+The **Model Manager** tab installs official Hugging Face model weights without requiring users to run model-download commands manually. Six model choices are available:
+
+- Chatterbox Nano, Turbo, Original English and Multilingual V3.
+- Qwen3-TTS Base 0.6B and 1.7B.
+
+Choose a model, review its local status and select **Download selected model**. The operation runs in the background, shows log messages and supports Stop. Chatterbox transfers stop between individual files; Qwen transfers can terminate the isolated download subprocess. Partially downloaded files can generally be reused after restarting.
+
+**Where files go:** Chatterbox weights are saved in the current user's application data under \`models\<model-id>\`, and Narration Studio automatically prefers validated downloaded weights to bundled files. Qwen weights go into the Hugging Face cache associated with the selected Qwen Python interpreter. **Check Qwen cache** detects a cached snapshot; only an actual generation confirms model inference. Existing Qwen caches are reused.
+
+**Qwen runtime remains separate:** The Model Manager downloads model weights but does not install Python 3.12, \`qwen-tts\`, or a compatible PyTorch build. Configure the Qwen interpreter under **Voice Engines** first. IndexTTS 2.5 stays experimental, outside the managed model list. No model is silently downloaded merely by opening Model Manager. Model downloads require network access and enough free disk space.
+
 ## Support Project Development
 
 Plague's Voice Studio is independently developed by **Kaotick Jay**. If you would like to support maintenance, bug fixes, documentation, and continued development, contributions are voluntary:
