@@ -55,7 +55,7 @@ def run(report_path: Path | None = None) -> int:
                 # About dialog includes diagnostics without importing torch.
                 lab = window.engine_lab
                 if lab is None or lab.engine.count() != 2:
-                    raise RuntimeError('Optional Engine Lab missing or incomplete.')
+                    raise RuntimeError('Voice Engines tab missing or incomplete.')
                 if lab.registry.read()['qwen3']['python']:
                     raise RuntimeError('Smoke test should have isolated optional-engine settings.')
                 if lab.model.count() != 2:
