@@ -70,6 +70,16 @@ TOPICS: tuple[tuple[str, str, str], ...] = (
 <p>WAV recordings created with Qwen3-TTS can also be sent to this export workflow from the engine results panel.</p>
 <p><b>Important:</b> Real LIP and XWM generation depends on compatible external tools; structurally valid FUZ packing does not guarantee in-game audio or lip-sync success. Test in the target game.</p>
 '''),
+    ('Model Manager', 'model downloads install cache nano turbo qwen weights offline status stop', '''
+<h2>Model Manager</h2>
+<p>Choose <b>Model Manager</b> to download Chatterbox Nano, Turbo, Original English or Multilingual V3, or Qwen3-TTS Base 0.6B or 1.7B. You choose when to download models, and each download can take several gigabytes of disk space.</p>
+<ol><li>Select a model and inspect its status. Chatterbox files already included in the application appear as <b>Included with application</b>.</li>
+<li>Select <b>Download selected model</b>, then confirm. Files are downloaded from their official Hugging Face repositories.</li>
+<li>Use <b>Stop</b> to cancel. Qwen subprocess downloads stop promptly; Chatterbox checks cancellation between individual file downloads. Incomplete downloads can be retried.</li>
+<li>For Qwen3, first configure its separate Python runtime in <b>Voice Engines</b>. <b>Check Qwen cache</b> reports whether the selected model has a cached snapshot. This does not validate model inference.</li></ol>
+<p>Chatterbox models downloaded from the GUI are stored in the writable user data directory and are used automatically on the next generation. Qwen models are downloaded to the Hugging Face cache used by the configured Qwen Python interpreter.</p>
+<p><b>Important:</b> Installing Qwen model weights is not the same as installing Qwen's Python runtime. IndexTTS 2.5 remains experimental and is not managed by this page.</p>
+'''),
     ('Build and troubleshooting', 'install windows offline build model download paging error 1455 python exe', '''
 <h2>Build and troubleshooting</h2>
 <h3>Windows portable build</h3>
