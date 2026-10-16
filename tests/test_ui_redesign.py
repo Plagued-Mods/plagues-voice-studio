@@ -32,6 +32,12 @@ def test_help_topics_are_searchable_without_models_or_network():
     assert len(matches('')) == len(topics)
     assert any('Bethesda' in topics[i][0] for i in matches('fuz'))
     assert any('Script' in topics[i][0] for i in matches('pause'))
+    sponsorship = next(html for title, _keywords, html in topics
+                       if title == 'Support Project Development')
+    assert 'https://github.com/sponsors/kaotickj' in sponsorship
+    assert 'https://www.patreon.com/KaotickJay' in sponsorship
+    assert 'https://paypal.me/kaotickj' in sponsorship
+    assert any('Qwen3-TTS' in topics[i][0] for i in matches('qwen'))
     assert matches('thereisnomatchingtopicname') == []
 
 
