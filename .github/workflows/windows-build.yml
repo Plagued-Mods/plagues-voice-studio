@@ -25,8 +25,8 @@ jobs:
       - name: Upload portable and installer
         uses: actions/upload-artifact@v4
         with:
-          name: PlaguesVoiceStudio024-Windows-Nano
+          name: PlaguesVoiceStudio030Experimental-Windows-Nano
           path: |
-            artifacts/PlaguesVoiceStudio024-Portable.zip
-            artifacts/PlaguesVoiceStudio024-Setup-*.exe
+            artifacts/PlaguesVoiceStudio030Experimental-Portable.zip
+            artifacts/PlaguesVoiceStudio030Experimental-Setup-*.exe
           if-no-files-found: error

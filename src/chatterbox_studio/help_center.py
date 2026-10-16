@@ -87,6 +87,26 @@ TOPICS: tuple[tuple[str, str, str], ...] = (
 <p>Chatterbox TTS is developed by <b>Resemble AI</b>; third-party libraries, model weights and game conversion utilities retain their individual terms. See <code>THIRD_PARTY_NOTICES.md</code> in the project.</p>
 <p><a href="https://github.com/resemble-ai/chatterbox">Resemble AI's Chatterbox source</a></p>
 '''),
+    ('Optional engines and A/B testing', 'experimental qwen indextts engine lab compare character profiles independent python', '''
+<h2>Optional Engine Lab (experimental)</h2>
+<p>The stable Narration Studio continues to use Chatterbox. Optional Engine Lab offers
+Qwen3-TTS and IndexTTS 2.5 as separate inference processes. They are <b>not bundled</b>
+and do not share Python packages with Chatterbox.</p>
+<ol><li>Install Qwen3-TTS or IndexTTS according to its upstream instructions, using a separate Python environment.</li>
+<li>In the Engine Lab, choose its Python executable. IndexTTS additionally needs the official repository and checkpoints directory.</li>
+<li>Choose <b>Test selected engine</b> to check imports and CUDA availability.</li>
+<li>Select a voice reference, a model, a language and your narration text.</li>
+<li>Use <b>Generate</b>, or <b>Compare Qwen + IndexTTS</b> to render the same text with both.</li></ol>
+<p>Outputs are new WAV files with JSON generation sidecars and are visible in Export Library.
+The generated WAV can also be sent to Bethesda Export. Character profiles remember engine,
+reference voice, language, emotion and settings; they do not duplicate or alter voice files.</p>
+<p><b>Important:</b> These adapters are experimental and have not been verified on every
+hardware configuration. Windows AMD GPU acceleration is not established. Initial model
+weights may download in the optional engine environment, using the user's disk space.
+IndexTTS uses a separate Bilibili model-use license. Confirm your rights before use.</p>
+<p><a href="https://github.com/QwenLM/Qwen3-TTS">Qwen3-TTS official installation guide</a><br>
+<a href="https://github.com/index-tts/index-tts">IndexTTS official installation guide</a></p>
+'''),
 )
 
 # QTextDocument HTML support is a subset of browser HTML. Keep it conservative.

@@ -65,8 +65,8 @@ if ($FullOffline) {
 }
 
 # Never reuse previous frozen Python modules. Source edits do not change a built EXE.
-if (Test-Path 'dist\PlaguesVoiceStudio024') {
-    Remove-Item -LiteralPath 'dist\PlaguesVoiceStudio024' -Recurse -Force
+if (Test-Path 'dist\PlaguesVoiceStudio030Experimental') {
+    Remove-Item -LiteralPath 'dist\PlaguesVoiceStudio030Experimental' -Recurse -Force
 }
 & $python -m PyInstaller --clean --noconfirm ChatterboxStudio.spec
 Assert-Success 'PyInstaller build failed'
@@ -74,7 +74,7 @@ Assert-Success 'PyInstaller build failed'
 # Smoke-test the actual frozen executable, not just the source venv. This
 # catches missing importlib.metadata *.dist-info directories, such as the
 # Transformers/requests issue, BEFORE compression or installer generation.
-$exe = Join-Path $root 'dist\PlaguesVoiceStudio024\PlaguesVoiceStudio024.exe'
+$exe = Join-Path $root 'dist\PlaguesVoiceStudio030Experimental\PlaguesVoiceStudio030Experimental.exe'
 $report = Join-Path $root 'build\frozen-smoke-test.json'
 if (Test-Path $report) { Remove-Item $report -Force }
 Write-Host 'Testing frozen runtime and dependency metadata...'
@@ -99,7 +99,7 @@ if (-not (Test-Path $uiReport)) {
     throw "Frozen GUI test did not produce a report (exit code $($uiSmoke.ExitCode)). The installer was NOT created."
 }
 $uiResult = Get-Content -LiteralPath $uiReport -Raw | ConvertFrom-Json
-if ($uiSmoke.ExitCode -ne 0 -or $uiResult.status -ne 'passed' -or $uiResult.version -ne '0.2.4') {
+if ($uiSmoke.ExitCode -ne 0 -or $uiResult.status -ne 'passed' -or $uiResult.version -ne '0.3.0-alpha4') {
     $details = ($uiResult.errors | Out-String).Trim()
     throw "Frozen GUI startup test failed. Installer not created. Details:`n$details"
 }
@@ -107,15 +107,15 @@ Write-Host 'Frozen Qt main-window test PASSED.'
 
 if ($FullOffline) {
     # PyInstaller onedir locates collected data under dist\App\_internal\.
-    & $python scripts\verify_models.py --all --root dist\PlaguesVoiceStudio024\_internal\models --require-marker
+    & $python scripts\verify_models.py --all --root dist\PlaguesVoiceStudio030Experimental\_internal\models --require-marker
     Assert-Success 'Frozen application is missing model data. Packaging aborted.'
 }
 
 New-Item -ItemType Directory -Force artifacts | Out-Null
-$filename = if ($FullOffline) { 'PlaguesVoiceStudio024-FullOffline-Portable.zip' } else { 'PlaguesVoiceStudio024-Portable.zip' }
+$filename = if ($FullOffline) { 'PlaguesVoiceStudio030Experimental-FullOffline-Portable.zip' } else { 'PlaguesVoiceStudio030Experimental-Portable.zip' }
 $portable = Join-Path $root ('artifacts\' + $filename)
 if (Test-Path $portable) { Remove-Item $portable -Force }
-Compress-Archive -Path 'dist\PlaguesVoiceStudio024' -DestinationPath $portable -CompressionLevel Optimal
+Compress-Archive -Path 'dist\PlaguesVoiceStudio030Experimental' -DestinationPath $portable -CompressionLevel Optimal
 Write-Host "Portable distribution: $portable"
 
 if (-not $SkipInstaller) {

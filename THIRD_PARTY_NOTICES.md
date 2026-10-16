@@ -23,3 +23,9 @@ The example installer copies this notice; it is not a complete legal compliance 
 - Bethesda `FonixData.cdf`, Creation Kit and `xwmaencode.exe`: Bethesda-controlled assets and tools; NOT BUNDLED. Installed locally by the end user.
 - Optional clean-room OpenFaceFX: https://github.com/OpenFaceFX/OpenFaceFX (MIT); its Bethesda LIP writer remains experimental, no in-game verification and no Fallout 4 support as of this review. Not used or bundled.
 - `.fuz` packing implementation and test code are original Python source distributed with this project.
+
+### Optional speech engines in experimental 0.3.0-alpha1
+
+- **Qwen3-TTS**, developed by Qwen/Alibaba, https://github.com/QwenLM/Qwen3-TTS . Separate source/model terms apply; not included in the host package. Optional explicit installation by the user.
+- **IndexTTS 2.5**, developed by IndexTTS upstream, https://github.com/index-tts/index-tts . Code/models are released under the Bilibili Model Use License Agreement; read the official LICENSE and DISCLAIMER. Not bundled. An optional setup script requires the user's license review acknowledgement.
+- The optional-engine subprocess runners are original integration code; they do not confer any licensing or redistribution rights to the upstream packages, models or generated output.

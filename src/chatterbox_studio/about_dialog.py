@@ -36,6 +36,7 @@ def diagnostics_text() -> str:
         f'Platform: {platform.system()} {platform.release()}',
         f'Python: {platform.python_version()}',
         f'Frozen executable: {bool(getattr(sys, "frozen", False))}',
+        'Optional engines: separately configured; no optional packages bundled.',
         'Bundled model checks:', *state,
         'Note: cached models are not enumerated. Do not include personal voice files in bug reports.',
     ])
@@ -94,7 +95,8 @@ class AboutDialog(QDialog):
         self.overview.setOpenExternalLinks(True)
         self.overview.setHtml('''<h3>What it does</h3>
 <p>Produce local Chatterbox speech, clone permitted reference voices,
-assemble multi-line narration jobs, and export WAV or MP3 recordings.</p>
+assemble multi-line narration jobs, and export WAV or MP3 recordings.
+Experimental optional adapters can invoke independent Qwen3-TTS or IndexTTS runtimes.</p>
 <p>Browse earlier recordings and prepare Fallout 4 / Skyrim voice assets with
 external tools you supply. Game dialogue plugins are not edited.</p>
 <h3>Our approach</h3><p>Local-first voice production with explicit model selection,
@@ -109,6 +111,9 @@ previewable exports, and respect for the speaker's permission.</p>
 <p><b>Chatterbox TTS:</b> Developed by Resemble AI. Its source and
 components are distributed under their respective license terms.
 <a href="https://github.com/resemble-ai/chatterbox">Visit Chatterbox upstream</a>.</p>
+<p><b>Optional engines:</b> Qwen3-TTS by Qwen/Alibaba and IndexTTS by its upstream authors.
+Not installed or redistributed with this build. Check their separate code/model terms,
+including the IndexTTS Bilibili Model Use License, before use.</p>
 <p><b>Qt/PyQt6:</b> Desktop user interface. PyQt6 has separate
 GPL/commercial licensing requirements.</p>
 <p><b>Bethesda export:</b> Game-specific conversion utilities and

@@ -1,6 +1,6 @@
 """Check a frozen Windows build BEFORE producing an installer.
 
-Launch using `PlaguesVoiceStudio024.exe --self-test report.json`. This does not
+Launch using `PlaguesVoiceStudio030Experimental.exe --self-test report.json`. This does not
 load model weights or synthesize speech, and can run without internet. A
 nonzero exit code means the binary is not ready to distribute.
 """
@@ -16,7 +16,7 @@ REQUIRED_METADATA = (
     "requests", "regex", "filelock", "fsspec", "huggingface-hub",
     "tokenizers", "safetensors", "packaging", "numpy", "PyYAML",
     "tqdm", "transformers", "torch", "torchaudio", "chatterbox-tts",
-    "plagues-voice-studio-v024", "diffusers", "librosa", "soundfile",
+    "plagues-voice-studio-v030", "diffusers", "librosa", "soundfile",
     "imageio-ffmpeg", "s3tokenizer", "resemble-perth",
 )
 

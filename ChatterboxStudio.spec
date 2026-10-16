@@ -10,6 +10,8 @@ datas = [
     (str(project / 'assets' / 'plagues-voice-studio-logo.png'), 'assets'),
     (str(project / 'THIRD_PARTY_NOTICES.md'), '.'),
     (str(project / 'LICENSE'), '.'),
+    (str(project / 'optional_engine_runner.py'), '.'),
+    (str(project / 'OPTIONAL_ENGINES.md'), '.'),
 ]
 for path in models.rglob('*'):
     if path.is_file() and '.cache' not in path.parts and path.name != '.gitkeep':
@@ -33,7 +35,7 @@ for package in ('chatterbox', 'imageio_ffmpeg', 's3tokenizer', 'perth'):
 # the build for a missing distribution is intentional: an incomplete EXE must
 # not be published as a working offline package.
 metadata_distributions = (
-    'plagues-voice-studio-v024', 'chatterbox-tts', 'resemble-perth',
+    'plagues-voice-studio-v030', 'chatterbox-tts', 'resemble-perth',
     'transformers', 'requests', 'regex', 'filelock', 'fsspec',
     'huggingface-hub', 'tokenizers', 'safetensors', 'packaging',
     'numpy', 'PyYAML', 'tqdm', 'torch', 'torchaudio',
@@ -62,11 +64,11 @@ analysis = Analysis(
 pyz = PYZ(analysis.pure)
 exe = EXE(
     pyz, analysis.scripts, [], exclude_binaries=True,
-    name='PlaguesVoiceStudio024',
+    name='PlaguesVoiceStudio030Experimental',
     icon=str(project / 'assets' / 'plagues-voice-studio.ico'),
     version=str(project / 'assets' / 'version_info.txt'),
     console=False,
     disable_windowed_traceback=False,
 )
 coll = COLLECT(exe, analysis.binaries, analysis.datas, strip=False, upx=False,
-               name='PlaguesVoiceStudio024')
+               name='PlaguesVoiceStudio030Experimental')
