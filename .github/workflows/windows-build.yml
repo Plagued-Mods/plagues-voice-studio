@@ -1,0 +1,32 @@
+name: Plague's Voice Studio Windows package
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Build offline Nano portable and installer
+        shell: pwsh
+        run: ./scripts/build_windows.ps1 -Models nano
+      - name: Upload portable and installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlaguesVoiceStudio030Experimental-Windows-Nano
+          path: |
+            artifacts/PlaguesVoiceStudio030Experimental-Portable.zip
+            artifacts/PlaguesVoiceStudio030Experimental-Setup-*.exe
+          if-no-files-found: error

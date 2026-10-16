@@ -1,0 +1,27 @@
+<#
+Optional, explicit setup for Qwen3-TTS. DOES NOT TOUCH the Chatterbox venv.
+Requires 64-bit Python 3.12, network and several GB free storage.
+Run only after reviewing https://github.com/QwenLM/Qwen3-TTS
+#>
+param(
+    [string]$EnvironmentDir = "$env:LOCALAPPDATA\PlaguesVoiceStudio-v030-Experimental\engines\qwen3",
+    [string]$PythonVersion = '3.12'
+)
+$ErrorActionPreference = 'Stop'
+$root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+Write-Host 'Installing OPTIONAL Qwen3-TTS in a separate environment.'
+Write-Host 'Your Chatterbox environment, stable app, and saved voices will not be changed.'
+if (-not (Test-Path "$EnvironmentDir\Scripts\python.exe")) {
+    & py "-$PythonVersion" -m venv $EnvironmentDir
+    if ($LASTEXITCODE -ne 0) { throw "Python $PythonVersion is required. Install it separately, then rerun." }
+}
+$python = Join-Path $EnvironmentDir 'Scripts\python.exe'
+& $python -m pip install --upgrade pip
+if ($LASTEXITCODE -ne 0) { throw 'pip bootstrap failed.' }
+& $python -m pip install qwen-tts soundfile
+if ($LASTEXITCODE -ne 0) { throw 'Qwen3-TTS installation failed.' }
+& $python (Join-Path $root 'optional_engine_runner.py') --probe qwen3
+if ($LASTEXITCODE -ne 0) { throw 'Engine import test failed.' }
+Write-Host 'In Optional Engine Lab, set Qwen3 Python to:'
+Write-Host $python
+Write-Host 'Model weights will download separately on first generation if not already cached.'
