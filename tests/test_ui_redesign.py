@@ -56,6 +56,20 @@ def test_engine_lab_promotes_qwen_without_changing_settings_paths():
     assert "self.setObjectName('engine_lab')" in engine
 
 
+def test_model_manager_is_available_and_preserves_existing_views():
+    app = (SRC / 'app.py').read_text(encoding='utf-8')
+    manager = (SRC / 'model_manager.py').read_text(encoding='utf-8')
+    smoke = (SRC / 'ui_smoke_test.py').read_text(encoding='utf-8')
+    engine = (SRC / 'engine.py').read_text(encoding='utf-8')
+    assert 'self.tabs.addTab(self.model_manager, "Model Manager")' in app
+    assert 'or self.model_manager.is_busy' in app
+    assert "self.setObjectName('model_manager')" in manager
+    assert 'Download selected model' in manager
+    assert 'Check Qwen cache' in manager
+    assert 'model_manager.model.count() != 6' in smoke
+    assert 'has_required_files(user_path, spec)' in engine
+
+
 def test_packaged_smoke_exercises_about_and_help():
     source = (SRC / 'ui_smoke_test.py').read_text(encoding='utf-8')
     assert 'about_button.click()' in source
