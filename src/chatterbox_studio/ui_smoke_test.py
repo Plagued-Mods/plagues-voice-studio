@@ -53,6 +53,11 @@ def run(report_path: Path | None = None) -> int:
                 about_dialog.close()
                 # Regression: help is searchable, can render a topic, and the
                 # About dialog includes diagnostics without importing torch.
+                model_manager = window.model_manager
+                if model_manager.model.count() != 6:
+                    raise RuntimeError('Model Manager model catalogue missing.')
+                if model_manager.is_busy:
+                    raise RuntimeError('Model Manager started a download during initialization.')
                 lab = window.engine_lab
                 if lab is None or lab.engine.count() != 2:
                     raise RuntimeError('Voice Engines tab missing or incomplete.')
