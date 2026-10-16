@@ -5,7 +5,7 @@
 ## Project roadmap and audio showcase
 
 - [Future live website demo](ROADMAP.md): authenticated/rate-limited access to real speech generation is planned, not yet deployed.
-- [Voice sample scripts and publication guidance](samples/README.md): short original test scripts for recording authentic Chatterbox and Qwen3-TTS outputs. No sample audio is published until generated and verified.
+- [Voice sample scripts and publication guidance](samples/README.md): three creator-supplied WAV examples have been prepared as MP3 previews for the Plagued Mods website package. Their original audio files are not yet in this application repository.
 
 ## Application Preview
 
