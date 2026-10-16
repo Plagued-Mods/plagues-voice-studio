@@ -6,9 +6,30 @@ on:
       - develop
     tags:
       - 'v*'
+    # Documentation, README screenshots and audio-showcase copy don't change
+    # the Windows app. Avoid 20+ minute rebuilds for those commits.
+    # Path filters apply to branch pushes; release tag builds still run.
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'models/**'
+      - 'assets/plagues-voice-studio-*'
+      - 'assets/version_info.txt'
+      - 'launcher.py'
+      - 'optional_engine_runner.py'
+      - 'ChatterboxStudio.spec'
+      - 'installer.iss'
+      - 'pyproject.toml'
+      - 'tests/**'
+      - 'OPTIONAL_ENGINES.md'
+      - 'THIRD_PARTY_NOTICES.md'
+      - 'LICENSE'
+      - '.github/workflows/windows-build.yml'
 concurrency:
   group: pvs-windows-${{ github.ref }}
-  cancel-in-progress: true
+  # A newer push must not destroy a nearly completed Windows installer build.
+  # GitHub may replace a pending (not running) build; the running job continues.
+  cancel-in-progress: false
 
 jobs:
   windows:
@@ -28,11 +49,31 @@ jobs:
       - name: Build offline Nano portable and installer
         shell: pwsh
         run: ./scripts/build_windows.ps1 -Models nano
-      - name: Upload portable and installer
+      # Inno Setup uses DiskSpanning=yes. Its setup EXE alone is incomplete:
+      # all accompanying .bin slices must be distributed in the same folder.
+      - name: Verify complete installer payload
+        shell: pwsh
+        run: |
+          $setups = @(Get-ChildItem artifacts -Filter 'PlaguesVoiceStudio030Experimental-Setup-*.exe' -File)
+          $slices = @(Get-ChildItem artifacts -Filter 'PlaguesVoiceStudio030Experimental-Setup-*.bin' -File)
+          if ($setups.Count -ne 1) {
+            throw "Expected exactly one Inno Setup executable; found $($setups.Count)."
+          }
+          if ($slices.Count -lt 1) {
+            throw 'Installer data slices (.bin) are missing. Refusing to publish an incomplete installer.'
+          }
+          Write-Host "Validated $($setups.Count) setup EXE and $($slices.Count) BIN slice(s)."
+      - name: Upload portable Windows package
         uses: actions/upload-artifact@v4
         with:
-          name: PlaguesVoiceStudio-develop-Windows-Nano
-          path: |
-            artifacts/PlaguesVoiceStudio030Experimental-Portable.zip
-            artifacts/PlaguesVoiceStudio030Experimental-Setup-*.exe
+          name: PlaguesVoiceStudio-develop-Windows-Portable
+          path: artifacts/PlaguesVoiceStudio030Experimental-Portable.zip
+          if-no-files-found: error
+      - name: Upload complete Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlaguesVoiceStudio-develop-Windows-Installer
+          # Match the EXE plus every -1.bin, -2.bin, ... disk-spanning slice.
+          # GitHub Actions retains these files in one downloadable ZIP.
+          path: artifacts/PlaguesVoiceStudio030Experimental-Setup-*
           if-no-files-found: error

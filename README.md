@@ -2,6 +2,15 @@
 
 **Created by Kaotick Jay.** Local AI voice production for narration, radio, character voices, and Bethesda game dialogue.
 
+## Project roadmap and audio showcase
+
+- [Future live website demo](ROADMAP.md): authenticated/rate-limited access to real speech generation is planned, not yet deployed.
+- [Voice sample scripts and publication guidance](samples/README.md): short original test scripts for recording authentic Chatterbox and Qwen3-TTS outputs. No sample audio is published until generated and verified.
+
+## Application Preview
+
+![Plague's Voice Studio desktop interface showing the Help Center, voice production and Model Manager tabs](assets/product-screenshot.png)
+
 **Speech-engine status:** Chatterbox and **Qwen3-TTS are supported, working engines**. Qwen3-TTS Base 0.6B voice cloning and WAV generation have been confirmed on Windows using CPU inference. **IndexTTS 2.5 remains experimental** and unverified on the current Windows/AMD setup. The software still carries the v0.3.0-alpha4 build identifier; calling Qwen stable does not imply that the entire application has completed final release QA.
 
 This is a **separately installed v0.3.0 build** based on the v0.2.4 stable source. Do not overwrite or uninstall v0.2.4. The preserved stable archive has SHA-256 `23464fb7c541e000d03f2c47f14e18629fe70d97f1b9b4d4ebadf556776d5928`.
