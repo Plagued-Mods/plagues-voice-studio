@@ -99,7 +99,7 @@ class AboutDialog(QDialog):
 voice-reference speech synthesis. Generate natural-sounding local voice recordings,
 manage reusable voice references and character profiles, and audition finished audio.</p>
 <p>Chatterbox Narration Studio offers script markup, narration jobs and batch production
-with WAV/MP3 export. The working Qwen3-TTS engine uses an independently configured
+with WAV/MP3 export. Choose <b>Voice Engines</b> to use Qwen3-TTS with an independently configured
 Python runtime, offers multilingual Base-model voice cloning, and produces WAV files
 with generation metadata and live diagnostics. <b>IndexTTS 2.5 remains experimental.</b></p>
 <p>Browse earlier recordings in Export Library and prepare Fallout 4 / Skyrim
