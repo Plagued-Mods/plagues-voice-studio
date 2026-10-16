@@ -1,0 +1,60 @@
+# Build/runtime environments (never committed)
+.venv/
+.venv*/
+venv/
+env/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.py[cod]
+*.egg-info/
+
+# Generated packages, artifacts, executables
+build/
+dist/
+dist-installer/
+artifacts/
+*.exe
+*.msi
+*.7z
+
+# Downloaded model weights and caches
+models/*
+!models/.gitkeep
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.gguf
+*.bin
+.huggingface/
+.hf_cache/
+
+# Generated speech, private voice samples, app state
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.xwm
+*.fuz
+*.lip
+voice_profiles/
+voices/
+engine_logs/
+outputs/
+output/
+exports/
+recordings/
+
+# Machine-local state
+.env
+.env.*
+!.env.example
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
