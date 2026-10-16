@@ -54,7 +54,7 @@ class OptionalEngineWorker(QObject):
                                             diagnostic_dir=self.diagnostic_dir)
                 self.result.emit(request['engine'], str(output), monotonic() - start)
         except EngineCancelled:
-            self.message.emit('Optional engine generation cancelled.')
+            self.message.emit('Voice engine generation cancelled.')
         except Exception as exc:
             self.failure.emit(str(exc))
         finally:
@@ -62,7 +62,7 @@ class OptionalEngineWorker(QObject):
 
 
 class EngineLab(QWidget):
-    """Optional engine selection, isolated runtime configuration, profiles, A/B testing."""
+    """Qwen3-TTS and experimental IndexTTS runtimes, profiles, and comparison."""
     def __init__(self, host):
         super().__init__(host)
         self.host = host
@@ -73,7 +73,7 @@ class EngineLab(QWidget):
         self.worker: OptionalEngineWorker | None = None
         self.thread: QThread | None = None
         self._started_at = 0.0
-        self._last_status = 'Optional runtime idle'
+        self._last_status = 'Engine idle'
         self.elapsed_timer = QTimer(self)
         self.elapsed_timer.setInterval(1000)
         self.elapsed_timer.timeout.connect(self._refresh_elapsed)
@@ -84,10 +84,10 @@ class EngineLab(QWidget):
 
     def _build(self):
         outer = QVBoxLayout(self)
-        headline = QLabel('OPTIONAL ENGINE LAB  |  EXPERIMENTAL')
+        headline = QLabel('VOICE ENGINES')
         headline.setObjectName('sectionTitle')
         outer.addWidget(headline)
-        note = QLabel('Chatterbox remains the stable narration engine. Qwen3-TTS and IndexTTS run in independent Python processes, with separate dependencies and model downloads. No optional engine is installed automatically.')
+        note = QLabel('Chatterbox and Qwen3-TTS are supported speech engines. IndexTTS 2.5 remains experimental. Qwen3 and IndexTTS use independent Python runtimes and separately downloaded model weights.')
         note.setWordWrap(True)
         outer.addWidget(note)
         scroll = QScrollArea()
@@ -98,7 +98,7 @@ class EngineLab(QWidget):
         scroll.setWidget(panel)
         layout = QVBoxLayout(panel)
 
-        runtimes = QGroupBox('1. Configure isolated runtime environments')
+        runtimes = QGroupBox('1. Engine environments')
         rform = QFormLayout(runtimes)
         self.qwen_py = QLineEdit(self.config['qwen3']['python'])
         self.qwen_py.setPlaceholderText('...\\qwen3\\.venv\\Scripts\\python.exe')
@@ -144,7 +144,7 @@ class EngineLab(QWidget):
         form.addRow('Character', r)
         self.engine = QComboBox()
         for identifier, data in ENGINES.items():
-            self.engine.addItem(data['label'], identifier)
+            self.engine.addItem(data['label'] + (' (Experimental)' if identifier == 'index25' else ''), identifier)
         self.engine.currentIndexChanged.connect(self._engine_changed)
         form.addRow('Engine', self.engine)
         self.model = QComboBox()
@@ -187,7 +187,8 @@ class EngineLab(QWidget):
         self.generate.setObjectName('primary')
         self.generate.clicked.connect(self.generate_selected)
         actions.addWidget(self.generate)
-        self.compare = QPushButton('Compare Qwen + IndexTTS')
+        self.compare = QPushButton('Compare Engines')
+        self.compare.setToolTip('Experimental comparison: requires a separate, working IndexTTS 2.5 installation.')
         self.compare.clicked.connect(self.compare_engines)
         actions.addWidget(self.compare)
         self.cancel = QPushButton('Cancel')
@@ -220,17 +221,17 @@ class EngineLab(QWidget):
             buttons.addWidget(button)
         result_layout.addLayout(buttons)
         layout.addWidget(results)
-        self.status = QLabel('Optional runtimes not validated yet. Configure paths and select Test first.')
+        self.status = QLabel('Configure the Qwen3-TTS runtime and select Test selected engine; IndexTTS 2.5 is experimental.')
         self.status.setWordWrap(True)
         layout.addWidget(self.status)
-        diagnostics = QGroupBox('5. Live optional-engine diagnostics')
+        diagnostics = QGroupBox('5. Live engine diagnostics')
         dlayout = QVBoxLayout(diagnostics)
         self.diagnostics = QPlainTextEdit()
         self.diagnostics.setObjectName('engine_diagnostics')
         self.diagnostics.setReadOnly(True)
         self.diagnostics.setMaximumBlockCount(300)
         self.diagnostics.setMinimumHeight(155)
-        self.diagnostics.setPlaceholderText('Engine loading stages and model-download output appear here. Logs are also saved to the experimental user-data folder.')
+        self.diagnostics.setPlaceholderText('Engine loading, model downloads, and speech-generation details appear here. Logs are saved in the current application data folder.')
         dlayout.addWidget(self.diagnostics)
         row = QHBoxLayout()
         folder = QPushButton('Open diagnostic logs')
@@ -254,7 +255,7 @@ class EngineLab(QWidget):
         }
         try:
             self.registry.save(self.config)
-            self.status.setText('Runtime paths saved to the experimental user-data folder. No installation has been performed.')
+            self.status.setText('Engine runtime paths saved. No installation was performed.')
         except Exception as exc:
             QMessageBox.warning(self, 'Unable to save runtime settings', str(exc))
 
@@ -422,7 +423,7 @@ class EngineLab(QWidget):
             job = self._make_request(engine)
             self._start(jobs=[(job, self.config[engine]['python'])])
         except EngineError as exc:
-            QMessageBox.warning(self, 'Check optional engine', str(exc))
+            QMessageBox.warning(self, 'Check voice engine', str(exc))
 
     def compare_engines(self):
         self.save_runtimes()
@@ -481,9 +482,9 @@ class EngineLab(QWidget):
         self._diagnostic_message(f'Generated {Path(output).name} with {ENGINES[engine]["label"]}')
 
     def _failure(self, error: str):
-        self._diagnostic_message('Optional engine failed. See details below and saved log; stable Chatterbox is unaffected.')
+        self._diagnostic_message('Voice engine failed. See the diagnostic log; other engines remain unaffected.')
         self._diagnostic_message(error[-3000:])
-        QMessageBox.warning(self, 'Optional engine failed', error[-8000:])
+        QMessageBox.warning(self, 'Voice engine failed', error[-8000:])
 
     def _finished(self):
         self.elapsed_timer.stop()
