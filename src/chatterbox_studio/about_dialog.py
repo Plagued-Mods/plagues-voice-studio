@@ -36,7 +36,8 @@ def diagnostics_text() -> str:
         f'Platform: {platform.system()} {platform.release()}',
         f'Python: {platform.python_version()}',
         f'Frozen executable: {bool(getattr(sys, "frozen", False))}',
-        'Optional engines: separately configured; no optional packages bundled.',
+        'Speech engines: Chatterbox and Qwen3-TTS supported; IndexTTS 2.5 experimental.',
+        'Qwen3 and IndexTTS use separate Python runtimes; no external engine packages bundled.',
         'Bundled model checks:', *state,
         'Note: cached models are not enumerated. Do not include personal voice files in bug reports.',
     ])
@@ -94,13 +95,19 @@ class AboutDialog(QDialog):
         self.overview = QTextBrowser()
         self.overview.setOpenExternalLinks(True)
         self.overview.setHtml('''<h3>What it does</h3>
-<p>Produce local Chatterbox speech, clone permitted reference voices,
-assemble multi-line narration jobs, and export WAV or MP3 recordings.
-Experimental optional adapters can invoke independent Qwen3-TTS or IndexTTS runtimes.</p>
-<p>Browse earlier recordings and prepare Fallout 4 / Skyrim voice assets with
-external tools you supply. Game dialogue plugins are not edited.</p>
-<h3>Our approach</h3><p>Local-first voice production with explicit model selection,
-previewable exports, and respect for the speaker's permission.</p>
+<p>Plague's Voice Studio supports <b>Chatterbox</b> narration and <b>Qwen3-TTS</b>
+voice-reference speech synthesis. Generate natural-sounding local voice recordings,
+manage reusable voice references and character profiles, and audition finished audio.</p>
+<p>Chatterbox Narration Studio offers script markup, narration jobs and batch production
+with WAV/MP3 export. The working Qwen3-TTS engine uses an independently configured
+Python runtime, offers multilingual Base-model voice cloning, and produces WAV files
+with generation metadata and live diagnostics. <b>IndexTTS 2.5 remains experimental.</b></p>
+<p>Browse earlier recordings in Export Library and prepare Fallout 4 / Skyrim
+WAV, LIP, XWM and FUZ voice assets using compatible external utilities you supply.
+Game dialogue plugins are not edited.</p>
+<h3>Our approach</h3><p>Local-first voice production, clear engine choices,
+reusable creative workflows, previewable exports and respect for speaker permission.
+An initial model download may require an internet connection.</p>
 <p>© 2026 Kaotick Jay. Original application.</p>''')
         tabs.addTab(self.overview, 'Overview')
 
@@ -111,9 +118,14 @@ previewable exports, and respect for the speaker's permission.</p>
 <p><b>Chatterbox TTS:</b> Developed by Resemble AI. Its source and
 components are distributed under their respective license terms.
 <a href="https://github.com/resemble-ai/chatterbox">Visit Chatterbox upstream</a>.</p>
-<p><b>Optional engines:</b> Qwen3-TTS by Qwen/Alibaba and IndexTTS by its upstream authors.
-Not installed or redistributed with this build. Check their separate code/model terms,
-including the IndexTTS Bilibili Model Use License, before use.</p>
+<p><b>Qwen3-TTS:</b> By the Qwen team. Its integration is supported, with successful
+Windows CPU synthesis confirmed using the 0.6B Base model. Its separate Python
+runtime and model weights are not redistributed here.
+<a href="https://github.com/QwenLM/Qwen3-TTS">Visit Qwen3-TTS upstream</a>.</p>
+<p><b>IndexTTS 2.5:</b> Experimental adapter by the upstream IndexTTS authors,
+not validated on the current Windows/AMD configuration. Check its separate
+Bilibili Model Use License before installation or use.
+<a href="https://github.com/index-tts/index-tts">Visit IndexTTS upstream</a>.</p>
 <p><b>Qt/PyQt6:</b> Desktop user interface. PyQt6 has separate
 GPL/commercial licensing requirements.</p>
 <p><b>Bethesda export:</b> Game-specific conversion utilities and
