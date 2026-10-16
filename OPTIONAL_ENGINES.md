@@ -1,6 +1,6 @@
 # Speech engines: supported Qwen3-TTS and experimental IndexTTS 2.5
 
-**Baseline:** Plague's Voice Studio v0.2.4 remains unchanged. The separate v0.3.0-alpha4 build retains the four Chatterbox models in **Narration Studio** and provides a working Qwen3-TTS implementation through the currently named **Optional Engine Lab** tab. IndexTTS 2.5 remains experimental. Keep independent engine runtimes out of `.venv-build` and the PyInstaller distribution folder.
+**Baseline:** Plague's Voice Studio v0.2.4 remains unchanged. The separate v0.3.0-alpha4 build retains the four Chatterbox models in **Narration Studio** and provides a working Qwen3-TTS implementation through the **Voice Engines** tab. IndexTTS 2.5 remains experimental. Keep independent engine runtimes out of `.venv-build` and the PyInstaller distribution folder.
 
 ## Engine status and requirements
 
@@ -22,7 +22,7 @@ The Windows graphics hardware compatibility of these engines, especially AMD Rad
    powershell -ExecutionPolicy Bypass -File .\scripts\setup_qwen_windows.ps1
    ```
 
-3. In **Optional Engine Lab**, point **Qwen3 Python** at the interpreter printed by the script, typically `%LOCALAPPDATA%\PlaguesVoiceStudio-v030-Experimental\engines\qwen3\Scripts\python.exe`.
+3. In **Voice Engines**, point **Qwen3 Python** at the interpreter printed by the script, typically `%LOCALAPPDATA%\PlaguesVoiceStudio-v030-Experimental\engines\qwen3\Scripts\python.exe`.
 4. Click **Save runtime paths**, choose Qwen3, then **Test selected engine**. This validates imports, not downloading weights or inferring real speech.
 5. Select a model, your existing voice reference, a reference transcript if you have one, and a test script. Generate. The Base model can use an x-vector-only speaker embedding when the transcript is omitted, but providing an exact transcript may improve similarity.
 
@@ -43,13 +43,13 @@ For either engine, installing packages or weights may require significant free d
 
 ## Reusable characters and comparisons
 
-1. In **Optional Engine Lab**, choose or type a character name (e.g., `Hattie Mama Mire Boggs`). Choose the voice reference; the stable v0.2.x library is offered read-only.
+1. In **Voice Engines**, choose or type a character name (e.g., `Hattie Mama Mire Boggs`). Choose the voice reference; the stable v0.2.x library is offered read-only.
 2. Pick Qwen3, its model/language/device, then **Save profile**.
 3. Pick IndexTTS, configure its model/language/emotion/duration, and **Save profile** again under the **same character name**. Per-engine settings are retained in the experimental `character_profiles.json`.
-4. Paste the same test passage, then choose **Compare Qwen + IndexTTS**. Results appear as individual WAVs with time measurements, descriptive filenames, and `.json` metadata. Play any result, browse it in the Export Library, or send it to the Bethesda LIP/XWM/FUZ workflow.
+4. Paste the same test passage, then choose **Compare Engines** (experimental, requires IndexTTS). Results appear as individual WAVs with time measurements, descriptive filenames, and `.json` metadata. Play any result, browse it in the Export Library, or send it to the Bethesda LIP/XWM/FUZ workflow.
 5. If you close the app during optional generation, it asks you to stop that work first. Cancel terminates the active engine child process. Comparisons render sequentially to limit peak memory demand.
 
-**Important:** The optional lab currently sends plain text directly to optional engines. Chatterbox-specific `[pause:...]`, `[rate:...]` and vocal-event tokens are **not parsed or guaranteed** there. Use the stable Narration Studio to process those tags. No MP3 or persistent batch queue yet for optional engines. No claim of identical voice timbre or human-quality output across engines is made.
+**Important:** The Voice Engines workflow currently sends plain text directly to Qwen3 and IndexTTS. Chatterbox-specific `[pause:...]`, `[rate:...]` and vocal-event tokens are **not parsed or guaranteed** there. Use the stable Narration Studio to process those tags. No MP3 or persistent batch queue yet for optional engines. No claim of identical voice timbre or human-quality output across engines is made.
 
 ## Directory isolation
 
@@ -69,7 +69,7 @@ Before adopting a result into a production mod, compare the pronunciation, emoti
 
 ### Alpha4 diagnostics
 
-For Qwen3-TTS use the current Optional Engine Lab tab > Test selected engine, then Generate. Qwen3 0.6B Base inference is working on Windows CPU; IndexTTS remains experimental.
+For Qwen3-TTS use Voice Engines > Test selected engine, then Generate. Qwen3 0.6B Base inference is working on Windows CPU; IndexTTS remains experimental.
 A live diagnostic pane shows model import, model loading, first-time download,
 CPU inference and WAV-writing stages. An elapsed clock remains visible during
 long CPU generation. Press Cancel if it stalls. Probe and generation logs

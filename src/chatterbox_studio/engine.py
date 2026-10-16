@@ -10,7 +10,8 @@ from typing import Callable
 import numpy as np
 
 from .jobs import NarrationJob
-from .paths import bundled_models_dir
+from .paths import bundled_models_dir, user_data_dir
+from .model_downloads import MODELS, has_required_files
 from .narration_markup import plan_script
 
 
@@ -39,20 +40,26 @@ def unique_output_path(path: Path) -> Path:
 
 def load_model(model_id: str, device: str):
     """Load included offline weights when present, otherwise Hugging Face cache/download."""
-    path = bundled_models_dir() / model_id
+    # Prefer validated per-user downloads; frozen app files remain read-only.
+    spec = MODELS[model_id]
+    user_path = user_data_dir() / 'models' / model_id
+    bundled_path = bundled_models_dir() / model_id
+    path = user_path if has_required_files(user_path, spec) else bundled_path
+    if not has_required_files(path, spec):
+        path = None
     if model_id in ("nano", "turbo"):
         from chatterbox.tts_turbo import ChatterboxTurboTTS
-        if path.is_dir():
+        if path is not None:
             return ChatterboxTurboTTS.from_local(path, device=device, nano=(model_id == "nano"))
         return ChatterboxTurboTTS.from_pretrained(device=device, nano=(model_id == "nano"))
     if model_id == "english":
         from chatterbox.tts import ChatterboxTTS
-        if path.is_dir():
+        if path is not None:
             return ChatterboxTTS.from_local(path, device=device)
         return ChatterboxTTS.from_pretrained(device=device)
     if model_id == "multilingual-v3":
         from chatterbox.mtl_tts import ChatterboxMultilingualTTS
-        if path.is_dir():
+        if path is not None:
             return ChatterboxMultilingualTTS.from_local(path, device=device, t3_model="v3")
         return ChatterboxMultilingualTTS.from_pretrained(device=device, t3_model="v3")
     raise ValueError(f"Unknown model: {model_id}")

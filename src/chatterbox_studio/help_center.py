@@ -21,7 +21,7 @@ TOPICS: tuple[tuple[str, str, str], ...] = (
 <li><b>Write or import</b> your script. Short paragraphs work well for spoken delivery.</li>
 <li><b>Generate now</b> or add multiple jobs to the Batch Queue.</li>
 <li><b>Review</b> the result in Export Library, then send it to Bethesda Voice Export if needed.</li></ol>
-<h3>Qwen3-TTS voice cloning</h3><p>For Qwen3-TTS, open the currently named <b>Optional Engine Lab</b> tab, configure the separate Qwen Python environment, choose your reference voice and model, and generate speech. The generated WAV joins Export Library and can be sent to Bethesda Voice Export. IndexTTS 2.5 remains an experimental alternative.</p>
+<h3>Qwen3-TTS voice cloning</h3><p>For Qwen3-TTS, open the <b>Voice Engines</b> tab, configure the separate Qwen Python environment, choose your reference voice and model, and generate speech. The generated WAV joins Export Library and can be sent to Bethesda Voice Export. IndexTTS 2.5 remains an experimental alternative.</p>
 <h3>Offline models</h3><p>Models bundled during a <b>FullOffline</b> build are available without downloads. Otherwise the program may download model weights on first use. The build option and the model chosen in the GUI are separate.</p>
 '''),
     ('Models and voices', 'nano turbo original english multilingual tags reference expressive clone', '''
@@ -70,6 +70,16 @@ TOPICS: tuple[tuple[str, str, str], ...] = (
 <p>WAV recordings created with Qwen3-TTS can also be sent to this export workflow from the engine results panel.</p>
 <p><b>Important:</b> Real LIP and XWM generation depends on compatible external tools; structurally valid FUZ packing does not guarantee in-game audio or lip-sync success. Test in the target game.</p>
 '''),
+    ('Model Manager', 'model downloads install cache nano turbo qwen weights offline status stop', '''
+<h2>Model Manager</h2>
+<p>Choose <b>Model Manager</b> to download Chatterbox Nano, Turbo, Original English or Multilingual V3, or Qwen3-TTS Base 0.6B or 1.7B. You choose when to download models, and each download can take several gigabytes of disk space.</p>
+<ol><li>Select a model and inspect its status. Chatterbox files already included in the application appear as <b>Included with application</b>.</li>
+<li>Select <b>Download selected model</b>, then confirm. Files are downloaded from their official Hugging Face repositories.</li>
+<li>Use <b>Stop</b> to cancel. Qwen subprocess downloads stop promptly; Chatterbox checks cancellation between individual file downloads. Incomplete downloads can be retried.</li>
+<li>For Qwen3, first configure its separate Python runtime in <b>Voice Engines</b>. <b>Check Qwen cache</b> reports whether the selected model has a cached snapshot. This does not validate model inference.</li></ol>
+<p>Chatterbox models downloaded from the GUI are stored in the writable user data directory and are used automatically on the next generation. Qwen models are downloaded to the Hugging Face cache used by the configured Qwen Python interpreter.</p>
+<p><b>Important:</b> Installing Qwen model weights is not the same as installing Qwen's Python runtime. IndexTTS 2.5 remains experimental and is not managed by this page.</p>
+'''),
     ('Build and troubleshooting', 'install windows offline build model download paging error 1455 python exe', '''
 <h2>Build and troubleshooting</h2>
 <h3>Windows portable build</h3>
@@ -92,15 +102,15 @@ TOPICS: tuple[tuple[str, str, str], ...] = (
 <p>Chatterbox TTS is developed by <b>Resemble AI</b> and Qwen3-TTS by the Qwen team. IndexTTS 2.5 remains experimental. Each upstream library, model and game conversion utility retains its individual terms. See <code>THIRD_PARTY_NOTICES.md</code> in the project.</p>
 <p><a href="https://github.com/resemble-ai/chatterbox">Resemble AI's Chatterbox source</a></p>
 '''),
-    ('Qwen3-TTS and experimental IndexTTS', 'qwen stable cloning indextts experimental engine lab comparison character profiles independent python', '''
+    ('Qwen3-TTS and experimental IndexTTS', 'qwen stable cloning indextts experimental voice engines compare character profiles independent python', '''
 <h2>Qwen3-TTS and IndexTTS 2.5</h2>
 <p><b>Qwen3-TTS is a supported speech engine.</b> Real 0.6B Base model voice generation and WAV export have been confirmed on Windows CPU. Chatterbox also remains fully supported. <b>IndexTTS 2.5 is experimental</b> and has not been verified on the current Windows/AMD configuration.</p>
-<p>These engines run in separately configured Python processes. Their packages and model weights are not bundled with the application or mixed with Chatterbox dependencies. The current interface tab is labeled <b>Optional Engine Lab</b>.</p>
+<p>These engines run in separately configured Python processes. Their packages and model weights are not bundled with the application or mixed with Chatterbox dependencies. Use the <b>Voice Engines</b> tab for Qwen3-TTS and experimental IndexTTS controls.</p>
 <ol><li>Install the desired engine according to its upstream instructions, using a separate Python environment.</li>
 <li>In the engine tab, enter the interpreter path. IndexTTS also needs its official repository and checkpoints directory.</li>
 <li>Select <b>Test selected engine</b> to check imports; an import test does not prove live synthesis.</li>
 <li>Choose a reference voice, a Base model, a language, and your narration text. For Qwen3, an accurate reference transcript can help cloning quality.</li>
-<li>Select <b>Generate with selected engine</b>. The <b>Compare Qwen + IndexTTS</b> action requires both engines to be installed and configured.</li></ol>
+<li>Select <b>Generate with selected engine</b>. The <b>Compare Engines</b> action requires both engines to be installed and configured.</li></ol>
 <p>Generated WAV recordings include JSON metadata, appear in Export Library, and can be sent to Bethesda Voice Export. Reusable character profiles retain per-engine settings and reference-voice choices without modifying the voice files. The engine view provides live progress, elapsed time, cancellation, and diagnostic logs.</p>
 <p><b>Current limitations:</b> Qwen3 and IndexTTS workflows accept plain text; Chatterbox narration tags and its batch/MP3 workflow are not applied. Windows AMD GPU acceleration is not established, and CPU generation may take time. The larger Qwen3 model and IndexTTS are not covered by the confirmed 0.6B Base CPU generation test. IndexTTS uses a separate Bilibili model-use license.</p>
 <p><a href="https://github.com/QwenLM/Qwen3-TTS">Qwen3-TTS official installation guide</a></p>

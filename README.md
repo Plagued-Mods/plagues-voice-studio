@@ -55,7 +55,7 @@ Qwen3-TTS and IndexTTS run in external Python environments. Alpha 2 prevents the
 
 ## Multi-engine features in v0.3.0
 
-- **Qwen3-TTS**, a supported engine integrated through the currently named **Optional Engine Lab** tab, with Base 0.6B/1.7B model choices; **IndexTTS 2.5** remains an experimental adapter.
+- **Qwen3-TTS**, a supported engine integrated through the **Voice Engines** tab, with Base 0.6B/1.7B model choices; **IndexTTS 2.5** remains an experimental adapter.
 - Independent per-engine Python interpreters. Neither optional engine is installed or loaded by the Chatterbox host at startup.
 - **Named character profiles** with per-engine model/language/device settings and shared reference voice. Saved to experimental-only JSON.
 - **A/B comparison**, rendering the same passage with both configured optional engines sequentially; measured rendering time, WAV outputs, playback and integration with the existing Bethesda exporter.
@@ -89,6 +89,9 @@ Stable Bethesda project profiles are **not automatically imported**, preventing 
 
 ## Building on Windows
 
+A [Windows GitHub Actions build](https://github.com/kaotickj/plagues-voice-studio/actions/workflows/windows-build.yml) on `develop` packages the current code as a portable application and installer. The build bundles the selected Chatterbox model; Qwen3-TTS still uses a separately installed local Python runtime and is not bundled in the installer.
+
+
 Windows x64, Python 3.11, Git, internet for initial Chatterbox installation and model acquisition. Inno Setup 6 is optional.
 
 ```powershell
@@ -99,11 +102,26 @@ The result is `dist\PlaguesVoiceStudio030Experimental\PlaguesVoiceStudio030Exper
 
 To preview source UI with an already prepared `.venv-build` environment, run `PREVIEW_GUI.bat`. A source-code change does not update an existing EXE; rebuilding is required.
 
-Qwen3-TTS and the experimental IndexTTS 2.5 adapter use separately installed Python runtimes, following `OPTIONAL_ENGINES.md`. The application does not install their packages automatically. Use the current **Optional Engine Lab → Test selected engine** action before generating. This checks imports; actual synthesis requires installed model weights. Downloads may be large.
+Qwen3-TTS and the experimental IndexTTS 2.5 adapter use separately installed Python runtimes, following `OPTIONAL_ENGINES.md`. The application does not install their packages automatically. Use **Voice Engines → Test selected engine** before generating. This checks imports; actual synthesis requires installed model weights. Downloads may be large.
 
 ## Testing status
 
 The Python source and protocol are unit-tested in a Linux container without PyQt6 or model weights. Separately, Qwen3-TTS 0.6B Base successfully generated speech and saved WAV audio on the user's Windows CPU setup. This does **not** establish full Windows GUI regression coverage, clean-machine installation, AMD GPU acceleration, 1.7B/IndexTTS inference, or Bethesda in-game compatibility. The Windows build uses a frozen Qt smoke test which must pass before installers are emitted.
+
+**Compatibility note:** Existing v0.3.0-alpha4 executable names, settings IDs and user-data folders still contain `Experimental` for compatibility with installed engine runtimes and saved voices. Renaming the on-screen engine tab does not move user data or change the release version. Qwen3-TTS 0.6B Base has been validated; the complete application still requires release testing.
+
+## Model Manager: install models from the GUI
+
+The **Model Manager** tab installs official Hugging Face model weights without requiring users to run model-download commands manually. Six model choices are available:
+
+- Chatterbox Nano, Turbo, Original English and Multilingual V3.
+- Qwen3-TTS Base 0.6B and 1.7B.
+
+Choose a model, review its local status and select **Download selected model**. The operation runs in the background, shows log messages and supports Stop. Chatterbox transfers stop between individual files; Qwen transfers can terminate the isolated download subprocess. Partially downloaded files can generally be reused after restarting.
+
+**Where files go:** Chatterbox weights are saved in the current user's application data under `models/<model-id>`, and Narration Studio automatically prefers validated downloaded weights to bundled files. Qwen weights go into the Hugging Face cache associated with the selected Qwen Python interpreter. **Check Qwen cache** detects a cached snapshot; only an actual generation confirms model inference. Existing Qwen caches are reused.
+
+**Qwen runtime remains separate:** The Model Manager downloads model weights but does not install Python 3.12, `qwen-tts`, or a compatible PyTorch build. Configure the Qwen interpreter under **Voice Engines** first. IndexTTS 2.5 stays experimental, outside the managed model list. No model is silently downloaded merely by opening Model Manager. Model downloads require network access and enough free disk space.
 
 ## Support Project Development
 

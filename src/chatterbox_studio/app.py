@@ -25,6 +25,7 @@ from .worker import RenderWorker
 from .narration_markup import plan_script, MarkupError
 from .bethesda_widget import BethesdaExportTab
 from .engine_lab import EngineLab
+from .model_manager import ModelManager
 from .help_center import HelpCenter
 from .about_dialog import AboutDialog
 from .ui_theme import CSS
@@ -82,7 +83,7 @@ def _load_pixmap(name: str, width: int | None = None, height: int | None = None)
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(f"Plague's Voice Studio {__version__} (Experimental)")
+        self.setWindowTitle(f"Plague's Voice Studio {__version__}")
         self.setWindowIcon(_application_icon())
         self.resize(1330, 880)
         self.setMinimumSize(940, 650)
@@ -131,7 +132,7 @@ class MainWindow(QMainWindow):
         title.setObjectName('sectionTitle')
         title.setStyleSheet('font-size: 23px; letter-spacing: 1px;')
         title_block.addWidget(title)
-        tagline = QLabel('CREATED BY KAOTICK JAY   |   MULTI-ENGINE EXPERIMENTAL BRANCH')
+        tagline = QLabel('CREATED BY KAOTICK JAY   |   LOCAL AI VOICE PRODUCTION')
         tagline.setObjectName('mutedText')
         title_block.addWidget(tagline)
         header.addLayout(title_block)
@@ -347,7 +348,10 @@ class MainWindow(QMainWindow):
         self.export_browser = ExportBrowser(self)
         self.tabs.addTab(self.export_browser, "Export Library")
         self.engine_lab = EngineLab(self)
-        self.tabs.addTab(self.engine_lab, "Optional Engine Lab")
+        self.tabs.addTab(self.engine_lab, "Voice Engines")
+
+        self.model_manager = ModelManager(self)
+        self.tabs.addTab(self.model_manager, "Model Manager")
 
         self.help_center = HelpCenter(self)
         self.tabs.addTab(self.help_center, 'Help')
@@ -773,9 +777,9 @@ class MainWindow(QMainWindow):
         self.chunk.setValue(int(self.settings.value("max_chars", 220)))
 
     def closeEvent(self, event: QCloseEvent):
-        if self.thread is not None or self.bethesda_tab.is_busy or self.engine_lab.is_busy:
+        if self.thread is not None or self.bethesda_tab.is_busy or self.engine_lab.is_busy or self.model_manager.is_busy:
             QMessageBox.information(self, "Generation running",
-                "Please cancel generation and close the app after all rendering processes finish.")
+                "Please stop generation or model downloads and wait until all tasks finish before closing.")
             event.ignore()
             return
         self.settings.setValue("model", self.model.currentData())

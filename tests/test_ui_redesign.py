@@ -17,6 +17,8 @@ def test_about_dialog_imports_qdialog_and_uses_nonmodal_show():
     assert "'plagues_about_dialog'" in module
     assert "'about_logo'" in module
     assert 'Copy diagnostics' in module
+    assert 'Voice Engines' in module
+    assert 'IndexTTS 2.5 remains experimental' in module
 
 
 def test_help_topics_are_searchable_without_models_or_network():
@@ -32,7 +34,40 @@ def test_help_topics_are_searchable_without_models_or_network():
     assert len(matches('')) == len(topics)
     assert any('Bethesda' in topics[i][0] for i in matches('fuz'))
     assert any('Script' in topics[i][0] for i in matches('pause'))
+    sponsorship = next(html for title, _keywords, html in topics
+                       if title == 'Support Project Development')
+    assert 'https://github.com/sponsors/kaotickj' in sponsorship
+    assert 'https://www.patreon.com/KaotickJay' in sponsorship
+    assert 'https://paypal.me/kaotickj' in sponsorship
+    assert any('Qwen3-TTS' in topics[i][0] for i in matches('qwen'))
+    assert any('Voice Engines' in html for _, _, html in topics)
+    assert not any('Optional Engine Lab' in html for _, _, html in topics)
     assert matches('thereisnomatchingtopicname') == []
+
+
+def test_engine_lab_promotes_qwen_without_changing_settings_paths():
+    app = (SRC / 'app.py').read_text(encoding='utf-8')
+    engine = (SRC / 'engine_lab.py').read_text(encoding='utf-8')
+    assert 'self.tabs.addTab(self.engine_lab, "Voice Engines")' in app
+    assert 'VOICE ENGINES' in engine
+    assert 'Chatterbox and Qwen3-TTS are supported speech engines' in engine
+    assert "if identifier == 'index25'" in engine
+    assert 'PlaguesVoiceStudio030Experimental' in app
+    assert "self.setObjectName('engine_lab')" in engine
+
+
+def test_model_manager_is_available_and_preserves_existing_views():
+    app = (SRC / 'app.py').read_text(encoding='utf-8')
+    manager = (SRC / 'model_manager.py').read_text(encoding='utf-8')
+    smoke = (SRC / 'ui_smoke_test.py').read_text(encoding='utf-8')
+    engine = (SRC / 'engine.py').read_text(encoding='utf-8')
+    assert 'self.tabs.addTab(self.model_manager, "Model Manager")' in app
+    assert 'or self.model_manager.is_busy' in app
+    assert "self.setObjectName('model_manager')" in manager
+    assert 'Download selected model' in manager
+    assert 'Check Qwen cache' in manager
+    assert 'model_manager.model.count() != 6' in smoke
+    assert 'has_required_files(user_path, spec)' in engine
 
 
 def test_packaged_smoke_exercises_about_and_help():
