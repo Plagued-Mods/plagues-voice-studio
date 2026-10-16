@@ -119,9 +119,9 @@ The **Model Manager** tab installs official Hugging Face model weights without r
 
 Choose a model, review its local status and select **Download selected model**. The operation runs in the background, shows log messages and supports Stop. Chatterbox transfers stop between individual files; Qwen transfers can terminate the isolated download subprocess. Partially downloaded files can generally be reused after restarting.
 
-**Where files go:** Chatterbox weights are saved in the current user's application data under \`models\<model-id>\`, and Narration Studio automatically prefers validated downloaded weights to bundled files. Qwen weights go into the Hugging Face cache associated with the selected Qwen Python interpreter. **Check Qwen cache** detects a cached snapshot; only an actual generation confirms model inference. Existing Qwen caches are reused.
+**Where files go:** Chatterbox weights are saved in the current user's application data under `models/<model-id>`, and Narration Studio automatically prefers validated downloaded weights to bundled files. Qwen weights go into the Hugging Face cache associated with the selected Qwen Python interpreter. **Check Qwen cache** detects a cached snapshot; only an actual generation confirms model inference. Existing Qwen caches are reused.
 
-**Qwen runtime remains separate:** The Model Manager downloads model weights but does not install Python 3.12, \`qwen-tts\`, or a compatible PyTorch build. Configure the Qwen interpreter under **Voice Engines** first. IndexTTS 2.5 stays experimental, outside the managed model list. No model is silently downloaded merely by opening Model Manager. Model downloads require network access and enough free disk space.
+**Qwen runtime remains separate:** The Model Manager downloads model weights but does not install Python 3.12, `qwen-tts`, or a compatible PyTorch build. Configure the Qwen interpreter under **Voice Engines** first. IndexTTS 2.5 stays experimental, outside the managed model list. No model is silently downloaded merely by opening Model Manager. Model downloads require network access and enough free disk space.
 
 ## Support Project Development
 
