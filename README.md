@@ -2,6 +2,11 @@
 
 **Created by Kaotick Jay.** Local AI voice production for narration, radio, character voices, and Bethesda game dialogue.
 
+## Project roadmap and audio showcase
+
+- [Future live website demo](ROADMAP.md): authenticated/rate-limited access to real speech generation is planned, not yet deployed.
+- [Voice sample scripts and publication guidance](samples/README.md): short original test scripts for recording authentic Chatterbox and Qwen3-TTS outputs. No sample audio is published until generated and verified.
+
 ## Application Preview
 
 ![Plague's Voice Studio desktop interface showing the Help Center, voice production and Model Manager tabs](assets/product-screenshot.png)
