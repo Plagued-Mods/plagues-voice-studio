@@ -162,7 +162,9 @@ class ModelManager(QWidget):
             self.destination.setText('Qwen Python: ' + (python or 'Not found. Configure the runtime under Voice Engines first.'))
             self.check.setEnabled(not self.is_busy and bool(python))
         self.status.setText(f'{selected.label}: {state}')
-        self.download.setEnabled(not self.is_busy and (selected.family == 'chatterbox' or bool(qwen_python(self.host.storage))))
+        self.download.setEnabled(not self.is_busy and (
+            (selected.family == 'chatterbox' and state == 'Download available') or
+            (selected.family == 'qwen3' and bool(qwen_python(self.host.storage)))))
 
     def _start(self, operation: str):
         if self.is_busy:
