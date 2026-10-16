@@ -1,13 +1,13 @@
-# Optional speech engines, experimental v0.3.0-alpha1
+# Speech engines: supported Qwen3-TTS and experimental IndexTTS 2.5
 
-**Stable baseline:** Plague's Voice Studio v0.2.4, unchanged. v0.3.0-alpha1 is a separate experimental build and data directory. It retains the four Chatterbox models in **Narration Studio** and adds an **Optional Engine Lab** tab for independent engines. Do not install third-party runtimes into `.venv-build` or inside the PyInstaller distribution folder.
+**Baseline:** Plague's Voice Studio v0.2.4 remains unchanged. The separate v0.3.0-alpha4 build retains the four Chatterbox models in **Narration Studio** and provides a working Qwen3-TTS implementation through the currently named **Optional Engine Lab** tab. IndexTTS 2.5 remains experimental. Keep independent engine runtimes out of `.venv-build` and the PyInstaller distribution folder.
 
-## Supported adapters (experimental)
+## Engine status and requirements
 
 | Adapter | Functional interface | Requirements | Verified here |
 | --- | --- | --- | --- |
-| Qwen3-TTS | 0.6B Base and 1.7B Base, voice cloning from reference audio, English and 9 other languages, WAV | Separate Python 3.12, `qwen-tts`, model weights (download on first use) | Protocol unit tests only, not live model generation |
-| IndexTTS 2.5 | Reference-voice cloning, five languages, optional emotion vector, duration factor, WAV | Separate `uv` environment, official `index-tts` checkout and `checkpoints/` weights | Protocol unit tests only, not live model generation |
+| Qwen3-TTS (supported) | 0.6B Base and 1.7B Base offered, reference-voice cloning, English and 9 other languages, WAV | Separate Python 3.12, `qwen-tts`, model weights (download on first use) | Successful Windows CPU synthesis and WAV output with real 0.6B Base weights; 1.7B not yet verified |
+| IndexTTS 2.5 (experimental) | Reference-voice cloning, five languages, optional emotion vector, duration factor, WAV | Separate `uv` environment, official `index-tts` checkout and `checkpoints/` weights | Protocol unit tests only; installation and live speech generation not verified on Windows/AMD |
 
 The application does not install these backends automatically. It launches an explicitly chosen Python interpreter as a local subprocess, using JSON input/output and no network server. Model downloads, if any, are done by the engine itself and may contact Hugging Face. An optional engine failure does **not** replace or uninstall Chatterbox. First-time model loading can be very slow on CPU.
 
@@ -39,7 +39,7 @@ The Windows graphics hardware compatibility of these engines, especially AMD Rad
 4. In Engine Lab, set both the repository directory and the `.venv\Scripts\python.exe` created under it. Click **Save runtime paths**, then **Test selected engine**.
 5. Choose a reference voice, a supported language (EN, ES, JA, ZH, AR) and emotion/duration controls. The 0.5–2.0 `duration_factor` applies to IndexTTS; **greater than 1 slows speech**, unlike ordinary speed multipliers.
 
-For either engine, installing packages or weights may require significant free disk space and virtual memory. If a library has changed its Python API upstream, the optional runner may need adjustment. This alpha does not bundle optional engine wheels or weights.
+For either engine, installing packages or weights may require significant free disk space and virtual memory. If a library has changed its Python API upstream, the optional runner may need adjustment. This source build does not bundle independent engine wheels or weights.
 
 ## Reusable characters and comparisons
 
@@ -69,7 +69,7 @@ Before adopting a result into a production mod, compare the pronunciation, emoti
 
 ### Alpha4 diagnostics
 
-For a Qwen experiment use Optional Engine Lab > Test selected engine, then Generate.
+For Qwen3-TTS use the current Optional Engine Lab tab > Test selected engine, then Generate. Qwen3 0.6B Base inference is working on Windows CPU; IndexTTS remains experimental.
 A live diagnostic pane shows model import, model loading, first-time download,
 CPU inference and WAV-writing stages. An elapsed clock remains visible during
 long CPU generation. Press Cancel if it stalls. Probe and generation logs
