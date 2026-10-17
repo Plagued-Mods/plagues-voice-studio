@@ -1,5 +1,5 @@
-#define AppName "Plague's Voice Studio 0.3 Experimental"
-#define AppVersion "0.3.0-alpha4"
+#define AppName "Plague's Voice Studio 0.3"
+#define AppVersion "0.3.0"
 #define AppPublisher "Kaotick Jay"
 #define AppExeName "PlaguesVoiceStudio030Experimental.exe"
 
@@ -36,8 +36,8 @@ Source: "dist\PlaguesVoiceStudio030Experimental\*"; DestDir: "{app}"; Flags: ign
 Source: "THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Plague's Voice Studio 0.3 Experimental"; Filename: "{app}\{#AppExeName}"
-Name: "{autodesktop}\Plague's Voice Studio 0.3 Experimental"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
+Name: "{group}\Plague's Voice Studio 0.3"; Filename: "{app}\{#AppExeName}"
+Name: "{autodesktop}\Plague's Voice Studio 0.3"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
 
 [Tasks]
 Name: desktopicon; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"
