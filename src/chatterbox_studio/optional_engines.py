@@ -1,4 +1,4 @@
-"""Experimental optional-engine protocol, with no optional ML imports in the host.
+"""Isolated optional-engine protocol, with no optional ML imports in the host.
 
 Qwen3-TTS and IndexTTS execute under independently chosen Python interpreters.
 Neither environment may alter the Chatterbox dependency set. Requests cross the
@@ -116,7 +116,7 @@ def new_output_path(folder: Path, stem: str) -> Path:
 
 
 class EngineRegistry:
-    """Separate experimental config, never mutates installed engine environments."""
+    """Separate engine config, never mutates installed engine environments."""
     def __init__(self, storage: Path):
         self.path = Path(storage) / 'optional_engines.json'
 

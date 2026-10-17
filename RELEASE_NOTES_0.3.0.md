@@ -1,4 +1,18 @@
-# Experimental 0.3.0-alpha4 (not a stable replacement)
+# Plague's Voice Studio 0.3.0 — Multi-engine release
+
+**Current status (October 17, 2026):** Chatterbox, Qwen3-TTS and IndexTTS 2.5 are supported locally. The creator confirmed successful speech generation with all three on the Windows machine used for development. An IndexTTS crash encountered while DJ Writer was also running stopped recurring when DJ Writer was closed; this suggests resource contention on that machine, not a permanent IndexTTS incompatibility.
+
+The full v0.3 application retains independently configured Python runtimes for Qwen3-TTS and IndexTTS. The independent v0.2.4 installation and data remain untouched. Engine weights, environment dependencies and licenses remain supplied/installed separately.
+
+The Export Library can display and copy the exact script from a recording's matching JSON file when such metadata exists. Newly generated Chatterbox recordings need the corresponding script-sidecar export fix in the installed build; older audio files without sidecars cannot be reconstructed automatically.
+
+The visible application and installer version is **0.3.0**. Technical identifiers in executable names, paths, and Windows settings still include `Experimental` to preserve compatibility with existing installs and downloaded engine environments.
+
+**Test scope:** successful real generation is confirmed on the creator's Windows setup. That does not imply Qwen3 1.7B, every GPU configuration, or clean-machine installer testing. Historical alpha notes below record the development timeline rather than current engine support.
+
+---
+
+## Historical: 0.3.0-alpha4 development notes
 
 Base: exact v0.2.4 stable source. Stable source frozen separately.
 

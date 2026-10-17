@@ -1,5 +1,5 @@
-#define AppName "Plague's Voice Studio 0.3 Experimental"
-#define AppVersion "0.3.0-alpha4"
+#define AppName "Plague's Voice Studio 0.3"
+#define AppVersion "0.3.0"
 #define AppPublisher "Kaotick Jay"
 #define AppExeName "PlaguesVoiceStudio030Experimental.exe"
 
@@ -35,9 +35,15 @@ LicenseFile=LICENSE
 Source: "dist\PlaguesVoiceStudio030Experimental\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
 
+[InstallDelete]
+; Existing 0.3 installations may have shortcuts with the former preview label.
+; Keep the same AppId and installation path so application data is preserved.
+Type: files; Name: "{group}\\Plague's Voice Studio 0.3 Experimental.lnk"
+Type: files; Name: "{autodesktop}\\Plague's Voice Studio 0.3 Experimental.lnk"
+
 [Icons]
-Name: "{group}\Plague's Voice Studio 0.3 Experimental"; Filename: "{app}\{#AppExeName}"
-Name: "{autodesktop}\Plague's Voice Studio 0.3 Experimental"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
+Name: "{group}\Plague's Voice Studio 0.3"; Filename: "{app}\{#AppExeName}"
+Name: "{autodesktop}\Plague's Voice Studio 0.3"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
 
 [Tasks]
 Name: desktopicon; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"
