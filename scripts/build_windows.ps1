@@ -99,11 +99,11 @@ if (-not (Test-Path $uiReport)) {
     throw "Frozen GUI test did not produce a report (exit code $($uiSmoke.ExitCode)). The installer was NOT created."
 }
 $uiResult = Get-Content -LiteralPath $uiReport -Raw | ConvertFrom-Json
-if ($uiSmoke.ExitCode -ne 0 -or $uiResult.status -ne 'passed' -or $uiResult.version -ne '0.3.0') {
+if ($uiSmoke.ExitCode -ne 0 -or $uiResult.status -ne 'passed' -or $uiResult.version -ne '0.3.0rc1') {
     $details = ($uiResult.errors | Out-String).Trim()
     throw "Frozen GUI startup test failed. Installer not created. Details:`n$details"
 }
-Write-Host 'Frozen Qt main-window test PASSED.'
+Write-Host 'Frozen Qt main-window and transcript preview test PASSED.'
 
 if ($FullOffline) {
     # PyInstaller onedir locates collected data under dist\App\_internal\.
