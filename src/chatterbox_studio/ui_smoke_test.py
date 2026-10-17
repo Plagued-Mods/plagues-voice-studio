@@ -66,7 +66,7 @@ def run(report_path: Path | None = None) -> int:
                 if lab.model.count() != 2:
                     raise RuntimeError('Qwen model selector did not populate.')
                 if lab.findChild(QPlainTextEdit, 'engine_diagnostics') is None:
-                    raise RuntimeError('Alpha4 live diagnostics pane missing.')
+                    raise RuntimeError('Voice-engine live diagnostics pane missing.')
                 if not lab.elapsed_timer.isSingleShot() and lab.elapsed_timer.isActive():
                     raise RuntimeError('Optional engine timer started during initialization.')
                 lab.engine.setCurrentIndex(1)
@@ -76,7 +76,7 @@ def run(report_path: Path | None = None) -> int:
                 lab.character.setEditText('Smoke Test Character')
                 lab.save_profile()
                 if 'Smoke Test Character' not in lab.profiles.read():
-                    raise RuntimeError('Experimental character profile was not saved.')
+                    raise RuntimeError('Voice character profile was not saved.')
                 if not (Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parents[2])) / 'optional_engine_runner.py').is_file():
                     raise RuntimeError('Optional subprocess runner missing from frozen package.')
                 help_center = window.findChild(type(window.help_center), 'help_center')
