@@ -421,6 +421,7 @@ def execute_generation(request: dict, python_exe: str, cancelled: Event | None =
             raise EngineError('Engine returned success but did not create a valid-sized WAV file.')
         atomic_json_write(output.with_suffix('.json'), {
             'engine': engine, 'model': request['model'], 'language': request['language'],
+            'text': request['text'],
             'voice_path': request['voice_path'], 'ref_text': request['ref_text'],
             'emotion': request['emotion'], 'speed': request['speed'], 'device': request['device'],
             'duration_seconds': round(time.monotonic() - start, 2),

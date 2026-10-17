@@ -13,13 +13,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Callable
+import json
 import os
 import re
 import shutil
 import struct
 import subprocess
+import wave
 
 
 class BethesdaExportError(RuntimeError):
@@ -33,6 +35,7 @@ FUZ_MAGIC = b"FUZE"
 _TAG = re.compile(r"\[[^\[\]\r\n]*\]")
 _SPACE = re.compile(r"\s+")
 _BAD_SEGMENT = re.compile(r"[\\/\x00-\x1f<>:\"|?*]")
+_RESERVED_SEGMENT = re.compile(r"^(?:CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[1-9¹²³]|LPT[1-9¹²³])(?:\.|$)", re.I)
 
 
 def clean_transcript(script: str) -> str:
@@ -46,7 +49,7 @@ def clean_transcript(script: str) -> str:
 
 def safe_segment(text: str, label: str) -> str:
     part = _BAD_SEGMENT.sub("_", text).strip(" .")
-    if not part or part in {".", ".."} or part != text.strip(" ."):
+    if not part or part != text or _RESERVED_SEGMENT.match(part):
         raise BethesdaExportError(f"Enter a valid {label} without path separators or special characters")
     if len(part) > 120:
         raise BethesdaExportError(f"{label} is too long")
@@ -54,27 +57,46 @@ def safe_segment(text: str, label: str) -> str:
 
 
 def is_xwma(data: bytes) -> bool:
-    """Reject ordinary PCM WAV files that have merely been renamed .xwm."""
-    if len(data) < 20 or data[:4] != b"RIFF":
+    """Check RIFF bounds, WMA format, seek table and nonempty packet data.
+
+    This validates the container, not the compressed audio's audible content.
+    A RIFF/XWMA label alone does not establish that encoding succeeded.
+    """
+    if len(data) < 12 or data[:4] != b"RIFF" or data[8:12] not in (b"XWMA", b"WAVE"):
         return False
-    if data[8:12] == b"XWMA":
-        return True
-    if data[8:12] != b"WAVE":
+    if struct.unpack_from("<I", data, 4)[0] + 8 != len(data):
         return False
-    # RIFF/WAVE can also carry an xWMA stream. The normal PCM fmt tag is 1;
-    # xWMA WMA2 is format tag 0x0161, with a dpds seek-table chunk.
     pos = 12
-    wma_format = False
-    has_seek = False
+    chunks = {}
     while pos + 8 <= len(data):
         tag = data[pos:pos+4]
         size = struct.unpack_from("<I", data, pos+4)[0]
-        if tag == b"fmt " and size >= 2 and pos + 10 <= len(data):
-            wma_format = struct.unpack_from("<H", data, pos+8)[0] == 0x0161
-        if tag == b"dpds":
-            has_seek = True
-        pos += 8 + size + size % 2
-    return wma_format and has_seek
+        start = pos + 8
+        end = start + size
+        pos = end + size % 2
+        if pos > len(data):
+            return False
+        if tag in (b"fmt ", b"dpds", b"data"):
+            if tag in chunks:
+                return False
+            chunks[tag] = data[start:end]
+    if pos != len(data) or any(tag not in chunks for tag in (b"fmt ", b"dpds", b"data")):
+        return False
+    fmt, seek, packets = (chunks[tag] for tag in (b"fmt ", b"dpds", b"data"))
+    if len(fmt) < 18 or not seek or len(seek) % 4 or not packets:
+        return False
+    codec, channels, rate, avg_bytes, block_align, bits, extra = struct.unpack_from("<HHIIHHH", fmt)
+    # XAudio2 accepts WMA2 and WMA3. PCM (1) is never xWMA.
+    if codec not in (0x0161, 0x0162) or not all((channels, rate, avg_bytes, block_align)):
+        return False
+    if len(fmt) < 18 + extra or bits != 16:
+        return False
+    previous = 0
+    for (decoded_bytes,) in struct.iter_unpack("<I", seek):
+        if decoded_bytes < previous or decoded_bytes % (channels * 2):
+            return False
+        previous = decoded_bytes
+    return previous > 0
 
 
 def write_fuz(path: Path, xwm: bytes, lip: bytes, *, version: int = 1) -> None:
@@ -87,7 +109,7 @@ def write_fuz(path: Path, xwm: bytes, lip: bytes, *, version: int = 1) -> None:
         raise BethesdaExportError("A non-empty LIP file is required for dialogue")
     if not is_xwma(xwm):
         raise BethesdaExportError("The encoder did not produce RIFF/xWMA audio")
-    if not (0 <= version <= 0xFFFFFFFF) or len(lip) > 0xFFFFFFFF:
+    if version != 1 or len(lip) > 0xFFFFFFFF:
         raise BethesdaExportError("Invalid FUZ header values")
     path.parent.mkdir(parents=True, exist_ok=True)
     partial = path.with_name(path.name + ".partial")
@@ -109,7 +131,24 @@ def read_fuz(path: Path) -> tuple[int, bytes, bytes]:
     version, size = struct.unpack_from("<II", contents, 4)
     if size > len(contents) - 12:
         raise BethesdaExportError("LIP length exceeds FUZ file size")
-    return version, contents[12:12+size], contents[12+size:]
+    lip, xwm = contents[12:12+size], contents[12+size:]
+    if version != 1 or not lip or not is_xwma(xwm):
+        raise BethesdaExportError("FUZ must contain version 1, non-empty LIP and complete RIFF/xWMA audio")
+    return version, lip, xwm
+
+
+def audio_transcript(path: Path) -> str:
+    """Read the output script, never the reference speaker's transcript.
+
+    Older recordings may have no script metadata. Return empty text so the UI
+    asks for the matching dialogue rather than retaining another line's script.
+    """
+    try:
+        metadata = json.loads(path.with_suffix('.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError, UnicodeError):
+        return ''
+    text = metadata.get('text') if isinstance(metadata, dict) else None
+    return clean_transcript(text) if isinstance(text, str) else ''
 
 
 def _tool(path: str, label: str) -> str:
@@ -127,7 +166,8 @@ def _tool(path: str, label: str) -> str:
 
 def _call(args: list[str], action: str) -> None:
     try:
-        result = subprocess.run(args, capture_output=True, text=True, errors="replace", timeout=240)
+        kwargs = {'creationflags': subprocess.CREATE_NO_WINDOW} if os.name == 'nt' else {}
+        result = subprocess.run(args, capture_output=True, text=True, errors="replace", timeout=240, **kwargs)
     except (OSError, subprocess.TimeoutExpired) as e:
         raise BethesdaExportError(f"{action} could not run: {e}") from e
     if result.returncode:
@@ -162,9 +202,9 @@ class BethesdaExportSettings:
             raise BethesdaExportError("Select a WAV or MP3 file that already exists")
         if not clean_transcript(self.text):
             raise BethesdaExportError("Dialogue text is required for lip synchronization")
-        for value, label in ((self.plugin_name, "plugin filename"), (self.voice_type, "voice type"),
-                             (self.response_filename, "response filename")):
+        for value, label in ((self.plugin_name, "plugin filename"), (self.voice_type, "voice type")):
             safe_segment(value, label)
+        response_stem(self.response_filename)
         if Path(self.plugin_name).suffix.lower() not in {".esp", ".esm", ".esl"}:
             raise BethesdaExportError("Plugin filename must end in .esp, .esm, or .esl")
         if self.encoder_type not in ENCODERS:
@@ -181,7 +221,7 @@ class BethesdaExportSettings:
             raise BethesdaExportError("Choose an output directory")
         if self.destination_mode not in ("game_data", "mod_root"):
             raise BethesdaExportError("Choose a supported installation target")
-        if not Path(self.output_root).is_dir():
+        if not Path(self.output_root).expanduser().is_dir():
             raise BethesdaExportError("Installation root must be an existing folder")
         if self.destination_mode == "game_data" and Path(self.output_root).name.casefold() != "data":
             raise BethesdaExportError("Game Data mode requires the actual game Data directory")
@@ -218,6 +258,8 @@ def expected_fuz_path(setting: BethesdaExportSettings) -> Path:
     Root is either the game's existing Data/ folder or the root of a mod manager's
     mod folder. Both have Sound/Voice directly underneath, never Data/Data.
     """
+    if not setting.output_root.strip():
+        raise BethesdaExportError("Choose an output directory")
     root = Path(setting.output_root).expanduser().resolve()
     plugin = safe_segment(setting.plugin_name, "plugin filename")
     voice = safe_segment(setting.voice_type, "voice type")
@@ -225,6 +267,17 @@ def expected_fuz_path(setting: BethesdaExportSettings) -> Path:
     if not stem:
         raise BethesdaExportError("Enter an exact dialogue response filename")
     return root / "Sound" / "Voice" / plugin / voice / (stem + ".fuz")
+
+
+def _check_prepared_wav(path: Path, rate: int) -> None:
+    try:
+        with wave.open(str(path), 'rb') as audio:
+            if (audio.getnchannels(), audio.getsampwidth(), audio.getframerate()) != (1, 2, rate):
+                raise BethesdaExportError(f"Audio preparation must produce {rate} Hz, 16-bit mono PCM")
+            if audio.getnframes() == 0 or not audio.readframes(1):
+                raise BethesdaExportError("Audio preparation produced an empty recording")
+    except (OSError, EOFError, wave.Error) as exc:
+        raise BethesdaExportError(f"Audio preparation did not produce a readable PCM WAV: {exc}") from exc
 
 
 def export_dialogue(setting: BethesdaExportSettings, report: Callable[[str], None] = lambda _: None) -> Path:
@@ -254,8 +307,9 @@ def export_dialogue(setting: BethesdaExportSettings, report: Callable[[str], Non
         lip_file = scratch / (stem + ".lip")
         xwm_file = scratch / (stem + ".xwm")
         report("Resampling for lip sync (16 kHz, 16-bit mono)...")
-        _call([ffmpeg, "-hide_banner", "-loglevel", "error", "-y", "-i", setting.source_audio,
+        _call([ffmpeg, "-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-i", setting.source_audio,
                "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", str(speech_wav)], "LIP audio preparation")
+        _check_prepared_wav(speech_wav, 16000)
         report("Generating game-specific LIP animation...")
         # The documented 6-argument FaceFXWrapper form accepts a pre-resampled WAV.
         _call([facefx, GAMES[setting.game], "USEnglish", setting.fonix_path,
@@ -264,8 +318,9 @@ def export_dialogue(setting: BethesdaExportSettings, report: Callable[[str], Non
             raise BethesdaExportError("FaceFX returned success but did not produce a LIP file")
 
         report("Resampling engine audio (44.1 kHz, 16-bit mono)...")
-        _call([ffmpeg, "-hide_banner", "-loglevel", "error", "-y", "-i", setting.source_audio,
+        _call([ffmpeg, "-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-i", setting.source_audio,
                "-vn", "-ac", "1", "-ar", "44100", "-c:a", "pcm_s16le", str(encoding_wav)], "XWM audio preparation")
+        _check_prepared_wav(encoding_wav, 44100)
         report("Encoding xWMA audio...")
         if setting.encoder_type == "wmaencoders":
             _call([encoder, str(encoding_wav), str(xwm_file), "--xwma",
@@ -278,18 +333,18 @@ def export_dialogue(setting: BethesdaExportSettings, report: Callable[[str], Non
 
         report("Packing Bethesda FUZ container...")
         lip_data, xwm_data = lip_file.read_bytes(), xwm_file.read_bytes()
+        # Reject broken tool output before replacing any retained source files.
+        candidate = scratch / 'candidate.fuz'
+        write_fuz(candidate, xwm_data, lip_data)
+        version, verified_lip, verified_xwm = read_fuz(candidate)
+        if version != 1 or verified_lip != lip_data or verified_xwm != xwm_data:
+            raise BethesdaExportError("FUZ round-trip validation failed")
         if setting.keep_intermediate:
             sidecar_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy2(encoding_wav, sidecar_dir / (stem + ".wav"))
             shutil.copy2(lip_file, sidecar_dir / (stem + ".lip"))
             shutil.copy2(xwm_file, sidecar_dir / (stem + ".xwm"))
             (sidecar_dir / (stem + ".txt")).write_text(clean_transcript(setting.text), encoding="utf-8")
-        # Validate the complete package BEFORE writing into an active game.
-        candidate = scratch / 'candidate.fuz'
-        write_fuz(candidate, xwm_data, lip_data)
-        version, verified_lip, verified_xwm = read_fuz(candidate)
-        if version != 1 or verified_lip != lip_data or verified_xwm != xwm_data:
-            raise BethesdaExportError("FUZ round-trip validation failed")
         fuz_path.parent.mkdir(parents=True, exist_ok=True)
         if fuz_path.exists():
             if not setting.overwrite_existing:
@@ -300,10 +355,24 @@ def export_dialogue(setting: BethesdaExportSettings, report: Callable[[str], Non
             backup = backup_root / f'{stem}-{timestamp}.fuz.bak'
             shutil.copy2(fuz_path, backup)
             report(f"Backed up previous FUZ to: {backup}")
-        deploy_tmp = fuz_path.with_name(fuz_path.name + '.pvs-partial')
+        # Separate application instances must not share the same partial file.
+        with NamedTemporaryFile(prefix=fuz_path.name + '.', suffix='.pvs-partial',
+                                dir=fuz_path.parent, delete=False) as staged:
+            deploy_tmp = Path(staged.name)
         try:
             shutil.copy2(candidate, deploy_tmp)
-            os.replace(deploy_tmp, fuz_path)
+            if setting.overwrite_existing:
+                os.replace(deploy_tmp, fuz_path)
+            elif os.name == 'nt':
+                # Windows rename refuses to replace an existing target, even
+                # one created after the earlier existence check.
+                os.rename(deploy_tmp, fuz_path)
+            else:
+                # POSIX rename replaces; link provides exclusive publication
+                # of the already complete file on the same filesystem.
+                os.link(deploy_tmp, fuz_path)
+        except FileExistsError as exc:
+            raise BethesdaExportError(f"Target appeared during export; existing file was preserved: {fuz_path}") from exc
         finally:
             deploy_tmp.unlink(missing_ok=True)
         if fuz_path.stat().st_size != candidate.stat().st_size:
