@@ -102,13 +102,13 @@ def run(report_path: Path | None = None) -> int:
                 from wave import open as open_wave
                 sample_dir = Path(tmp) / 'script-preview-acceptance'
                 sample_dir.mkdir()
-                script = '[narration] The Charles River is quiet.\\n\\n[whispering] Not for long, sweetheart.'
+                script = '[narration] The Charles River is quiet.\n\n[whispering] Not for long, sweetheart.'
                 audio_path = sample_dir / 'test_story.wav'
                 with open_wave(str(audio_path), 'wb') as output_wave:
                     output_wave.setnchannels(1)
                     output_wave.setsampwidth(2)
                     output_wave.setframerate(8000)
-                    output_wave.writeframes(b'\\x00\\x00' * 800)
+                    output_wave.writeframes(b'\x00\x00' * 800)
                 write_export_metadata(audio_path, {
                     'engine': 'chatterbox', 'model': 'turbo', 'text': script,
                 })
