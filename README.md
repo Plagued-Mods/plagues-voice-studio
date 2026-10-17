@@ -118,7 +118,7 @@ Qwen3-TTS and IndexTTS 2.5 use separately installed Python runtimes, following `
 
 **Chatterbox script saving is implemented on the current source branch.** New Chatterbox WAV/MP3 renders should create a same-stem JSON with an exact original-script `text` field; Qwen3 and IndexTTS already save analogous metadata. In **Export Library**, selecting any recording with saved metadata previews the text and enables **Copy script**. A previously built Windows EXE is not updated automatically by a GitHub merge.
 
-The RC now includes an expanded frozen-Windows GUI smoke test to verify JSON-to-Export-Library text preview and clipboard copying. A real Chatterbox render with a corresponding JSON sidecar is still required before final release. See **[Release candidate acceptance checklist](RELEASE_CANDIDATE_CHECKLIST.md)** for the specific pass criteria and steps.
+The RC Windows build first runs Chatterbox/JSON integration and Export Library regression tests, and then runs an expanded frozen-Windows GUI smoke test to verify JSON-to-Export-Library text preview and clipboard copying. A real Chatterbox render with a corresponding JSON sidecar is still required before final release. See **[Release candidate acceptance checklist](RELEASE_CANDIDATE_CHECKLIST.md)** for the specific pass criteria and steps.
 
 ## Testing status
 
