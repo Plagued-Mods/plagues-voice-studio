@@ -1,4 +1,4 @@
-"""Optional multi-engine experiments. Chatterbox narration remains unchanged."""
+"""Local multi-engine voice studio. Chatterbox narration remains independent."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -62,7 +62,7 @@ class OptionalEngineWorker(QObject):
 
 
 class EngineLab(QWidget):
-    """Qwen3-TTS and experimental IndexTTS runtimes, profiles, and comparison."""
+    """Qwen3-TTS and IndexTTS runtimes, profiles, and comparison."""
     def __init__(self, host):
         super().__init__(host)
         self.host = host
@@ -87,7 +87,7 @@ class EngineLab(QWidget):
         headline = QLabel('VOICE ENGINES')
         headline.setObjectName('sectionTitle')
         outer.addWidget(headline)
-        note = QLabel('Chatterbox and Qwen3-TTS are supported speech engines. IndexTTS 2.5 remains experimental. Qwen3 and IndexTTS use independent Python runtimes and separately downloaded model weights.')
+        note = QLabel('Chatterbox, Qwen3-TTS and IndexTTS 2.5 are supported speech engines. Qwen3 and IndexTTS use independent Python runtimes and separately downloaded model weights. Run memory-intensive AI jobs one at a time if system memory is limited.')
         note.setWordWrap(True)
         outer.addWidget(note)
         scroll = QScrollArea()
@@ -144,7 +144,7 @@ class EngineLab(QWidget):
         form.addRow('Character', r)
         self.engine = QComboBox()
         for identifier, data in ENGINES.items():
-            self.engine.addItem(data['label'] + (' (Experimental)' if identifier == 'index25' else ''), identifier)
+            self.engine.addItem(data['label'], identifier)
         self.engine.currentIndexChanged.connect(self._engine_changed)
         form.addRow('Engine', self.engine)
         self.model = QComboBox()
@@ -175,7 +175,7 @@ class EngineLab(QWidget):
         script = QGroupBox('3. Script and generation')
         slayout = QVBoxLayout(script)
         self.text = QPlainTextEdit()
-        self.text.setPlaceholderText('Enter a short passage to test voice similarity and expressiveness. For comparison, the same passage is sent to both engines.')
+        self.text.setPlaceholderText('Enter narration for Qwen3-TTS or IndexTTS 2.5. Compare Engines sends the same passage to each engine in sequence.')
         self.text.setMinimumHeight(110)
         self.text.setMaximumHeight(195)
         slayout.addWidget(self.text)
@@ -188,7 +188,7 @@ class EngineLab(QWidget):
         self.generate.clicked.connect(self.generate_selected)
         actions.addWidget(self.generate)
         self.compare = QPushButton('Compare Engines')
-        self.compare.setToolTip('Experimental comparison: requires a separate, working IndexTTS 2.5 installation.')
+        self.compare.setToolTip('Compare Qwen3-TTS and IndexTTS 2.5 using their separately configured local runtimes. Each generation runs sequentially.')
         self.compare.clicked.connect(self.compare_engines)
         actions.addWidget(self.compare)
         self.cancel = QPushButton('Cancel')
@@ -221,7 +221,7 @@ class EngineLab(QWidget):
             buttons.addWidget(button)
         result_layout.addLayout(buttons)
         layout.addWidget(results)
-        self.status = QLabel('Configure the Qwen3-TTS runtime and select Test selected engine; IndexTTS 2.5 is experimental.')
+        self.status = QLabel('Configure the Python runtime for Qwen3-TTS or IndexTTS 2.5, select Test selected engine, then generate speech.')
         self.status.setWordWrap(True)
         layout.addWidget(self.status)
         diagnostics = QGroupBox('5. Live engine diagnostics')
