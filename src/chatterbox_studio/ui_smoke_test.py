@@ -51,6 +51,20 @@ def run(report_path: Path | None = None) -> int:
                 if not about_dialog.isVisible():
                     raise RuntimeError('About dialog did not reopen.')
                 about_dialog.close()
+                # Regression: the update-check dialog opens without networking
+                # or creating a thread. Auto-checks must be off by default.
+                update_button = window.findChild(QPushButton, 'updates_button')
+                if update_button is None:
+                    raise RuntimeError('Check for updates button missing.')
+                update_button.click()
+                update_dialog = window.findChild(QDialog, 'pvs_updates_dialog')
+                if update_dialog is None or not update_dialog.isVisible():
+                    raise RuntimeError('Updates dialog failed to open.')
+                if update_dialog.auto.isChecked() or update_dialog.is_checking:
+                    raise RuntimeError('Updates should be opt-in and idle by default.')
+                if not update_dialog.findChild(QPushButton, 'updates_check_now'):
+                    raise RuntimeError('Manual update button missing.')
+                update_dialog.close()
                 # Regression: help is searchable, can render a topic, and the
                 # About dialog includes diagnostics without importing torch.
                 model_manager = window.model_manager
@@ -66,7 +80,7 @@ def run(report_path: Path | None = None) -> int:
                 if lab.model.count() != 2:
                     raise RuntimeError('Qwen model selector did not populate.')
                 if lab.findChild(QPlainTextEdit, 'engine_diagnostics') is None:
-                    raise RuntimeError('Alpha4 live diagnostics pane missing.')
+                    raise RuntimeError('Voice-engine live diagnostics pane missing.')
                 if not lab.elapsed_timer.isSingleShot() and lab.elapsed_timer.isActive():
                     raise RuntimeError('Optional engine timer started during initialization.')
                 lab.engine.setCurrentIndex(1)
@@ -76,7 +90,7 @@ def run(report_path: Path | None = None) -> int:
                 lab.character.setEditText('Smoke Test Character')
                 lab.save_profile()
                 if 'Smoke Test Character' not in lab.profiles.read():
-                    raise RuntimeError('Experimental character profile was not saved.')
+                    raise RuntimeError('Voice character profile was not saved.')
                 if not (Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parents[2])) / 'optional_engine_runner.py').is_file():
                     raise RuntimeError('Optional subprocess runner missing from frozen package.')
                 help_center = window.findChild(type(window.help_center), 'help_center')

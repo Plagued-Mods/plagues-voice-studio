@@ -1,4 +1,4 @@
-"""Experimental v0.3 library with read-only access to v0.2.x and v0.1.x.
+"""v0.3 writable library with read-only access to v0.2.x and v0.1.x.
 
 Never writes to or removes any file belonging to the older application.
 """
@@ -47,10 +47,10 @@ def narration_basename(voice_name: str | None, at: datetime | None = None) -> st
 
 
 class CompatibleVoiceLibrary:
-    """Experimental writable library + stable/legacy read-only references.
+    """Current writable library + stable/legacy read-only references.
 
     Legacy/stable identifiers are prefixed to avoid accidental conflicts. New
-    imports go only to experimental storage. Removal of old voices is prohibited.
+    imports go only to v0.3 storage. Removal of old voices is prohibited.
     """
     def __init__(self, storage: Path):
         self.current = VoiceLibrary(storage)

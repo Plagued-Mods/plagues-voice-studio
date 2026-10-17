@@ -39,4 +39,4 @@ See [samples/README.md](samples/README.md).
 
 ## Release notes
 
-Qwen3-TTS 0.6B Base has been confirmed working on Windows CPU. IndexTTS 2.5 remains experimental. This roadmap does not change the release status of either engine.
+The creator has confirmed working Windows speech generation with Chatterbox, Qwen3-TTS and IndexTTS 2.5. The roadmap focuses on future features, not whether IndexTTS already functions in the desktop application.

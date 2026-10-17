@@ -1,7 +1,7 @@
 <#
-Rebuild the experimental Windows executable using EXISTING .venv-build.
+Rebuild the v0.3 Windows executable using EXISTING .venv-build.
 No package/model downloads, no compression, no installer. Run in project root.
-Use this AFTER applying the alpha4 hotfix onto your existing alpha3 source.
+Retained for compatibility with previous alpha4 source layouts; it also accepts v0.3.0.
 #>
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -12,13 +12,13 @@ if (-not (Test-Path -LiteralPath $python)) {
     throw 'Missing .venv-build: apply alpha4 to the previously built experimental directory, or set up a new build environment.'
 }
 $versionFile = Join-Path $root 'src\chatterbox_studio\__init__.py'
-if ((Get-Content -LiteralPath $versionFile -Raw) -notmatch '0\.3\.0-alpha4') {
-    throw 'Alpha4 source was not applied. Run APPLY_ALPHA4_HOTFIX.ps1 first.'
+if ((Get-Content -LiteralPath $versionFile -Raw) -notmatch '0\.3\.0(?:-alpha4)?') {
+    throw 'Expected v0.3.0 (or older alpha4) source. Update the checkout before rebuilding.'
 }
 $free = (Get-PSDrive -Name (Split-Path -Qualifier $root).TrimEnd(':')).Free
 Write-Host ('Free build-drive disk space: {0:N1} GB' -f ($free / 1GB))
 if ($free -lt 8GB) { Write-Warning 'Low disk space: PyInstaller needs temporary build space.' }
-Write-Host 'Rebuilding the existing experimental app WITHOUT pip, model downloads or ZIP packaging...'
+Write-Host 'Rebuilding the existing v0.3 app WITHOUT pip, model downloads or ZIP packaging...'
 & $python -m PyInstaller --noconfirm ChatterboxStudio.spec
 if ($LASTEXITCODE -ne 0) { throw 'PyInstaller rebuild failed. Check space and installed build packages.' }
 $exe = Join-Path $root 'dist\PlaguesVoiceStudio030Experimental\PlaguesVoiceStudio030Experimental.exe'
@@ -35,10 +35,10 @@ foreach ($mode in @('--self-test','--ui-self-test')) {
     if ($p.ExitCode -ne 0 -or $check.status -ne 'passed') {
         throw "Smoke test failed; inspect $dest"
     }
-    if ($mode -eq '--ui-self-test' -and $check.version -ne '0.3.0-alpha4') {
+    if ($mode -eq '--ui-self-test' -and $check.version -notin @('0.3.0', '0.3.0-alpha4')) {
         throw "Incorrect frozen version: $($check.version)"
     }
     Write-Host "PASSED: $mode"
 }
-Write-Host "Alpha4 executable ready: $exe"
+Write-Host "v0.3 executable ready: $exe"
 Write-Host 'Launch the above EXE directly; old desktop shortcuts may still launch an older build.'

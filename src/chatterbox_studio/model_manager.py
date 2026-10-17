@@ -80,7 +80,7 @@ class ModelManager(QWidget):
         outer.addWidget(header)
         intro = QLabel('Download speech models when you need them. Chatterbox models are saved in your user data folder. '
                        'Qwen3-TTS uses its independently configured Python environment and Hugging Face cache. '
-                       'IndexTTS 2.5 remains experimental and is not managed here.')
+                       'IndexTTS 2.5 is supported via Voice Engines; install its separate runtime and checkpoints as described in Help.')
         intro.setWordWrap(True)
         outer.addWidget(intro)
 

@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import numpy as np
 import soundfile as sf
 import pytest
@@ -49,3 +50,32 @@ def test_cancel_removes_partial(tmp_path):
                  lambda: len(model.calls) >= 1)
     assert not list(tmp_path.glob('*.partial.wav'))
     assert not list(tmp_path.glob('*.wav'))
+
+def test_render_creates_matching_script_sidecar(tmp_path):
+    script = '[narration] Hi there.\n\n[whispering] Are you listening?'
+    model = FakeModel()
+    # The engine must record the exact input string, not the chunked / normalized text.
+    j = job(tmp_path, text=script)
+    result = Engine(model_loader=lambda *_: model).render(
+        j, lambda _: None, lambda *_: None, lambda: False)
+    sidecar = result.with_suffix('.json')
+    assert sidecar.is_file()
+    meta = json.loads(sidecar.read_text(encoding='utf8'))
+    assert meta['text'] == script
+    assert meta['engine'] == 'chatterbox'
+    assert meta['output_path'] == str(result)
+    assert meta['format'] == 'wav'
+    # Name collision changes BOTH filenames consistently.
+    second = Engine(model_loader=lambda *_: FakeModel()).render(
+        j, lambda _: None, lambda *_: None, lambda: False)
+    assert second.name == 'export_2.wav'
+    assert json.loads(second.with_suffix('.json').read_text())['text'] == script
+
+
+def test_cancel_does_not_save_script_metadata(tmp_path):
+    model=FakeModel()
+    with pytest.raises(GenerationCancelled):
+        Engine(model_loader=lambda *_: model).render(
+            job(tmp_path), lambda _: None, lambda *_: None,
+            lambda: len(model.calls) >= 1)
+    assert not list(tmp_path.glob('*.json'))
