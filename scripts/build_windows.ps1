@@ -52,6 +52,12 @@ Assert-Success 'pip bootstrap failed'
 & $python -m pip install -e '.[build]'
 Assert-Success 'Project dependency installation failed'
 
+& $python -m pip install 'pytest>=8,<10'
+Assert-Success 'Could not install build-host regression test runner'
+Write-Host 'Testing Chatterbox audio/JSON sidecars and Export Library preview wiring...'
+& $python -m pytest -q tests/test_engine.py tests/test_export_metadata.py tests/test_gui_wiring.py
+Assert-Success 'Chatterbox transcript or Export Library regression tests failed. Installer NOT created.'
+
 # Remove stale strict mode marker before preparing a new build.
 $marker = Join-Path $root 'models\offline-bundle.json'
 if (Test-Path $marker) { Remove-Item $marker -Force }
