@@ -4,9 +4,11 @@ from datetime import datetime
 from pathlib import Path
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QDesktopServices
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QLabel, QComboBox, QTreeWidget, QTreeWidgetItem, QFileDialog, QMessageBox)
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
+    QLabel, QComboBox, QTreeWidget, QTreeWidgetItem, QFileDialog, QMessageBox,
+    QPlainTextEdit, QSplitter)
 from .pvs_library import old_export_directories, new_export_directory
+from .export_metadata import read_export_script
 
 SUPPORTED = {'.wav', '.mp3', '.flac', '.ogg', '.m4a'}
 
@@ -46,7 +48,31 @@ class ExportBrowser(QWidget):
         self.list.setAlternatingRowColors(True)
         self.list.setSortingEnabled(True)
         self.list.itemDoubleClicked.connect(lambda *_: self.play_selected())
-        layout.addWidget(self.list, 1)
+        self.list.currentItemChanged.connect(lambda *_: self.preview_selected())
+        split = QSplitter(Qt.Orientation.Vertical)
+        split.addWidget(self.list)
+        preview_panel = QWidget()
+        preview_layout = QVBoxLayout(preview_panel)
+        preview_layout.setContentsMargins(0, 4, 0, 0)
+        preview_layout.addWidget(QLabel('Script preview (read-only, including speech tags)'))
+        self.script_preview = QPlainTextEdit()
+        self.script_preview.setReadOnly(True)
+        self.script_preview.setPlaceholderText('Select an audio export to see the original script.')
+        self.script_preview.setMinimumHeight(110)
+        preview_layout.addWidget(self.script_preview, 1)
+        preview_footer = QHBoxLayout()
+        self.preview_status = QLabel('Select a recording to view its saved text.')
+        self.preview_status.setWordWrap(True)
+        preview_footer.addWidget(self.preview_status, 1)
+        self.copy_script = QPushButton('Copy script')
+        self.copy_script.setEnabled(False)
+        self.copy_script.clicked.connect(self._copy_script)
+        preview_footer.addWidget(self.copy_script)
+        preview_layout.addLayout(preview_footer)
+        split.addWidget(preview_panel)
+        split.setStretchFactor(0, 3)
+        split.setStretchFactor(1, 2)
+        layout.addWidget(split, 1)
         action = QHBoxLayout()
         self.play = QPushButton('Play selected')
         self.play.clicked.connect(self.play_selected)
@@ -83,6 +109,7 @@ class ExportBrowser(QWidget):
         if not hasattr(self, 'list'):
             return
         self.list.clear()
+        self._clear_preview()
         root_str = self.folders.currentData()
         if not root_str:
             return
@@ -107,6 +134,25 @@ class ExportBrowser(QWidget):
             self.info.setText(f'Unable to scan export folder: {exc}')
             return
         self.info.setText(f'{count} playable files' + (' (first 3000 shown)' if count >= 3000 else ''))
+
+    def _clear_preview(self):
+        self.script_preview.clear()
+        self.preview_status.setText('Select a recording to view its saved text.')
+        self.copy_script.setEnabled(False)
+
+    def preview_selected(self):
+        audio = self.selected_path()
+        if audio is None or not audio.is_file():
+            self._clear_preview()
+            return
+        script, status = read_export_script(audio)
+        self.script_preview.setPlainText(script if script is not None else '')
+        self.preview_status.setText(status)
+        self.copy_script.setEnabled(script is not None)
+
+    def _copy_script(self):
+        if self.copy_script.isEnabled():
+            QApplication.clipboard().setText(self.script_preview.toPlainText())
 
     def selected_path(self) -> Path | None:
         item = self.list.currentItem()
