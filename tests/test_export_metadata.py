@@ -40,3 +40,14 @@ def test_numbered_export_uses_matching_json(tmp_path):
     second.with_suffix('.json').write_text('{"text":"Second recording"}', encoding='utf-8')
     assert read_export_script(first)[0] == 'First recording'
     assert read_export_script(second)[0] == 'Second recording'
+
+def test_atomic_writer_and_orphaned_metadata(tmp_path):
+    from chatterbox_studio.export_metadata import write_export_metadata
+    from chatterbox_studio.engine import unique_output_path
+    audio = tmp_path / 'example.wav'
+    text = '[narration] Goodneighbor.\n\n[whispering] The Third Rail.'
+    write_export_metadata(audio, {'text': text, 'engine': 'chatterbox'})
+    assert read_export_script(audio)[0] == text
+    # A missing WAV must never allow a later render to overwrite existing JSON.
+    assert unique_output_path(audio).name == 'example_2.wav'
+    assert not list(tmp_path.glob('*.tmp'))
