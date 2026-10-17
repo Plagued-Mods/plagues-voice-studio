@@ -98,6 +98,7 @@ def test_subprocess_and_json_sidecar_without_ml(tmp_path, monkeypatch):
     assert rendered.is_file()
     info = json.loads(rendered.with_suffix('.json').read_text())
     assert info['engine'] == 'qwen3'
+    assert info['text'] == r['text']
     assert info['voice_path'] == str((tmp_path / 'voice.wav').resolve())
 
 
