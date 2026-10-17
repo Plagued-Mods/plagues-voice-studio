@@ -5,6 +5,7 @@ Heavy ML dependencies are intentionally imported only inside a background worker
 from __future__ import annotations
 import os
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 import numpy as np
@@ -13,6 +14,7 @@ from .jobs import NarrationJob
 from .paths import bundled_models_dir, user_data_dir
 from .model_downloads import MODELS, has_required_files
 from .narration_markup import plan_script
+from .export_metadata import write_export_metadata
 
 
 class GenerationCancelled(Exception):
@@ -29,11 +31,11 @@ def resolve_device(requested: str) -> str:
 
 def unique_output_path(path: Path) -> Path:
     path = Path(path)
-    if not path.exists():
+    if not path.exists() and not path.with_suffix(".json").exists():
         return path
     for n in range(2, 10001):
         candidate = path.with_name(f"{path.stem}_{n}{path.suffix}")
-        if not candidate.exists():
+        if not candidate.exists() and not candidate.with_suffix(".json").exists():
             return candidate
     raise RuntimeError("Too many exports use this filename")
 
@@ -189,6 +191,18 @@ class Engine:
                 os.replace(mp3_temp, target)
             else:
                 os.replace(temporary, target)
+            # Preserve the immutable job snapshot used for this specific render.
+            # Scripts include exactly the original tags, newlines, and punctuation.
+            # Use target, not job.output_path, because target can be numbered.
+            metadata = {
+                **job.as_json(),
+                "engine": "chatterbox",
+                "output_path": str(target),
+                "device_used": device,
+                "sample_rate": int(model.sr),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            write_export_metadata(target, metadata)
             report(f"Saved: {target}")
             return target
         finally:
