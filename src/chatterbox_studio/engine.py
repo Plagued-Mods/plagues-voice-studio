@@ -202,7 +202,8 @@ class Engine:
                 "sample_rate": int(model.sr),
                 "created_at": datetime.now(timezone.utc).isoformat(),
             }
-            write_export_metadata(target, metadata)
+            sidecar = write_export_metadata(target, metadata)
+            report(f"Saved script metadata: {sidecar}")
             report(f"Saved: {target}")
             return target
         finally:
