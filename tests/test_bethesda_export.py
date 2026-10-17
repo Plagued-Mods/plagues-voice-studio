@@ -14,9 +14,9 @@ def test_clean_transcript():
     assert clean_transcript("[narration] Hello, [chuckle] there. [pause:700ms] [rate:0.8]Stay.[/rate]") == "Hello, there. Stay."
 
 
-def test_fuz_roundtrip(tmp_path):
+def test_fuz_roundtrip(tmp_path, xwma_bytes):
     p = tmp_path / "voice.fuz"
-    audio = b"RIFF" + struct.pack("<I", 16) + b"XWMA" + b"fmt " + b"content"
+    audio = xwma_bytes()
     lip = b"FAKE_LIP_BYTES"
     write_fuz(p, audio, lip)
     assert read_fuz(p) == (1, lip, audio)
@@ -40,7 +40,7 @@ def _make_executable(path: Path, contents: str) -> None:
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="POSIX test fake executable; Windows supports real .exe")
-def test_mod_export_with_mock_tools(tmp_path):
+def test_mod_export_with_mock_tools(tmp_path, xwma_bytes):
     """Uses real FFmpeg + synthetic WAV, but no copyrighted external programs."""
     import imageio_ffmpeg
     _ = imageio_ffmpeg.get_ffmpeg_exe()
@@ -55,7 +55,8 @@ def test_mod_export_with_mock_tools(tmp_path):
     facefx = tmp_path / "FaceFXWrapper"
     _make_executable(facefx, """import sys\nfrom pathlib import Path\nassert sys.argv[1] in ('Fallout4', 'Skyrim')\nassert sys.argv[2] == 'USEnglish'\nassert 'Hello there.' == sys.argv[-1]\nPath(sys.argv[-2]).write_bytes(b'LIP_UNIT_TEST')\n""")
     encoder = tmp_path / "WMAEncodeRS"
-    _make_executable(encoder, """import sys, struct\nfrom pathlib import Path\nassert '--xwma' in sys.argv\nassert '-b' in sys.argv\nPath(sys.argv[2]).write_bytes(b'RIFF'+struct.pack('<I',16)+b'XWMA' + b'fmt '+b'mock')\n""")
+    _make_executable(encoder, "import sys\nfrom pathlib import Path\nassert '--xwma' in sys.argv\nassert '-b' in sys.argv\n" +
+                     f"Path(sys.argv[2]).write_bytes({xwma_bytes()!r})\n")
     root = tmp_path / "Game" / "Data"
     root.mkdir(parents=True)
     source_files = tmp_path / "source_files"

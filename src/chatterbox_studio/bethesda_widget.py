@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGroupBox,
     QFormLayout, QComboBox, QLabel, QLineEdit, QPushButton, QFileDialog,
     QPlainTextEdit, QMessageBox, QCheckBox, QScrollArea, QInputDialog)
 from .bethesda_export import (BethesdaExportSettings, BethesdaExportError,
-    export_dialogue, expected_fuz_path, clean_transcript)
+    export_dialogue, expected_fuz_path, clean_transcript, audio_transcript)
 from .mod_profiles import ModProfileStore, ProfileError
 
 
@@ -123,6 +123,7 @@ class BethesdaExportTab(QWidget):
         self.transcript.setPlaceholderText('Exact text spoken by the recording. Used by FaceFX for mouth movements.')
         self.transcript.setMinimumHeight(80)
         audio_layout.addWidget(self.transcript)
+        self.audio.textChanged.connect(self._audio_changed)
         copy = QPushButton('Copy dialogue from Narration Studio (remove tags)')
         copy.clicked.connect(lambda: self.transcript.setPlainText(clean_transcript(self.host.editor.toPlainText())))
         audio_layout.addWidget(copy)
@@ -155,7 +156,7 @@ class BethesdaExportTab(QWidget):
         self.bitrate.addItem('48 kbps', 48)
         self.bitrate.addItem('32 kbps', 32)
         tool_form.addRow('Bitrate', self.bitrate)
-        self.keep = QCheckBox('Keep WAV, XWM, LIP, transcript separately in my v0.2 project files')
+        self.keep = QCheckBox('Keep WAV, XWM, LIP and transcript separately in this application’s project files')
         self.keep.setChecked(True)
         tool_form.addRow(self.keep)
         layout.addWidget(tool_group)
@@ -200,6 +201,18 @@ class BethesdaExportTab(QWidget):
         else:
             QMessageBox.information(self, 'No completed narration', 'Generate narration or select an existing export from the Export Library.')
 
+    def _audio_changed(self, path):
+        # All entry points (browser, engine comparison, picker, typed paths)
+        # must discard the previous recording's dialogue before loading a new one.
+        transcript = audio_transcript(Path(path)) if path else ''
+        if not transcript and path:
+            results = getattr(self.host, 'results', {})
+            for job in getattr(self.host, 'queue', []):
+                if results.get(job.job_id) == path:
+                    transcript = clean_transcript(job.text)
+                    break
+        self.transcript.setPlainText(transcript)
+
     def _get_project(self):
         pid = self.project_select.currentData()
         return next((p for p in self.projects if p['id'] == pid), None)
@@ -226,7 +239,10 @@ class BethesdaExportTab(QWidget):
                  destination_mode=self.mode.currentData(), root=self.root.text().strip())
         self.store.save(self.projects)
         self.settings.setValue('bethesda/last_project', p['id'])
+        # Saving this project's paths must preserve a VoiceType being edited.
+        voice_type = self.voice_type.text()
         self._refresh_project_select(p['id'])
+        self.voice_type.setText(voice_type)
         self.host._log('Saved Bethesda project: ' + name)
 
     def _delete_project(self):
@@ -255,6 +271,7 @@ class BethesdaExportTab(QWidget):
     def _project_selected(self):
         p = self._get_project()
         if p is None:
+            self.voice_type.clear()
             self.voice_select.blockSignals(True)
             self.voice_select.clear()
             self.voice_select.addItem('Unsaved voice assignment', '')
@@ -276,6 +293,7 @@ class BethesdaExportTab(QWidget):
 
     def _refresh_voice_select(self, selected):
         p = self._get_project()
+        self.voice_type.clear()
         self.voice_select.blockSignals(True)
         self.voice_select.clear()
         self.voice_select.addItem('Unsaved voice assignment', '')
@@ -338,7 +356,6 @@ class BethesdaExportTab(QWidget):
 
     def _config(self):
         sidecars = self.host.storage / 'bethesda_source'
-        sidecars.mkdir(parents=True, exist_ok=True)
         return BethesdaExportSettings(
             source_audio=self.audio.text().strip(), text=self.transcript.toPlainText(),
             game=self.game.currentData(), plugin_name=self.plugin.text().strip(),
@@ -356,24 +373,28 @@ class BethesdaExportTab(QWidget):
             path = expected_fuz_path(config)
             self.preview.setText('FUZ installation target:\n' + str(path) +
                 ('\nExisting file: replacement needs confirmation and a backup.' if path.exists() else '\nNew file: no overwrite required.'))
-        except (ValueError, BethesdaExportError) as exc:
+        except (ValueError, OSError, BethesdaExportError) as exc:
             self.preview.setText('Incomplete destination: ' + str(exc))
 
     def _start(self):
         if self.thread is not None or self.host.thread is not None:
             QMessageBox.information(self, 'Busy', 'Finish the active job first.')
             return
-        config = self._config()
         try:
+            # Previewing a target never creates project files. Only a real
+            # export needs its source/backup directory to be writable.
+            sidecars = self.host.storage / 'bethesda_source'
+            sidecars.mkdir(parents=True, exist_ok=True)
+            config = self._config()
             config.validate()
             path = expected_fuz_path(config)
-        except BethesdaExportError as exc:
+        except (BethesdaExportError, OSError) as exc:
             QMessageBox.warning(self, 'Check export settings', str(exc))
             return
         if path.exists():
             choice = QMessageBox.question(self, 'Replace existing dialogue?',
                 'This FUZ already exists:\n' + str(path) +
-                '\n\nReplace it? The original will first be backed up in the v0.2 project files.',
+                '\n\nReplace it? The original will first be backed up in this application’s project files.',
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 QMessageBox.StandardButton.No)
             if choice != QMessageBox.StandardButton.Yes:

@@ -11,7 +11,13 @@
 5. Packs the `.fuz` in our own audited Python code. Its format is `FUZE` + little-endian uint32 version (1) + uint32 lip size + LIP bytes + encoded audio bytes. Round-trip unpacking verifies our output.
 6. Creates `Data/Sound/Voice/<YourMod.esp>/<VoiceType>/<ResponseFilename>.fuz` in a staging directory. Source WAV/LIP/XWM and transcript are kept separately in `PVS_Source_Files/` if requested. Do not include this backup directory in your shipped mod.
 
-**Naming caveat:** Actual dialogue filenames must match Creation Kit dialogue response exports exactly. The UI lets users enter the filename but cannot derive it reliably without the plugin and CK-export metadata. Existing files are not overwritten.
+**Naming caveat:** Actual dialogue filenames must match Creation Kit dialogue response exports exactly. The UI lets users enter the filename but cannot derive it reliably without the plugin and CK-export metadata. Replacing an existing FUZ requires confirmation and an external backup.
+
+The October 17, 2026 code review tightened container validation, output publication,
+transcript handoff and saved VoiceType selection. See
+[BETHESDA_RELEASE_CHECK.md](BETHESDA_RELEASE_CHECK.md) for the remaining real-tool
+and in-game acceptance test. Automated tests use real FFmpeg but simulated
+FaceFX/encoder output; they do not establish native LIP generation or playback.
 
 ## Tools and licensing
 
