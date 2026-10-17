@@ -1,4 +1,4 @@
-# Plague's Voice Studio v0.3.0-alpha4
+# Plague's Voice Studio v0.3.0
 
 **Created by Kaotick Jay.** Local AI voice production for narration, radio, character voices, and Bethesda game dialogue.
 
@@ -11,7 +11,7 @@
 
 ![Plague's Voice Studio desktop interface showing the Help Center, voice production and Model Manager tabs](assets/product-screenshot.png)
 
-**Speech-engine status:** Chatterbox and **Qwen3-TTS are supported, working engines**. Qwen3-TTS Base 0.6B voice cloning and WAV generation have been confirmed on Windows using CPU inference. **IndexTTS 2.5 remains experimental** and unverified on the current Windows/AMD setup. The software still carries the v0.3.0-alpha4 build identifier; calling Qwen stable does not imply that the entire application has completed final release QA.
+**Speech-engine status:** **Chatterbox, Qwen3-TTS and IndexTTS 2.5 are supported.** The creator has confirmed real speech generation with all three on the Windows setup used for development. Qwen3-TTS Base 0.6B and IndexTTS 2.5 have produced working audio. This describes verified use on that machine; it does not guarantee compatibility with every GPU, every model size or future upstream release.
 
 This is a **separately installed v0.3.0 build** based on the v0.2.4 stable source. Do not overwrite or uninstall v0.2.4. The preserved stable archive has SHA-256 `23464fb7c541e000d03f2c47f14e18629fe70d97f1b9b4d4ebadf556776d5928`.
 
@@ -19,21 +19,20 @@ This is a **separately installed v0.3.0 build** based on the v0.2.4 stable sourc
 
 - Generate Chatterbox speech with Nano, Turbo, Original English, or Multilingual V3, including model-appropriate controls, narration markup, batch jobs, and WAV/MP3 output.
 - Generate multilingual reference-voice speech with Qwen3-TTS Base models in a separate Python environment, with WAV output, diagnostic logs, cancellation, and reusable character profiles.
-- Browse and audition existing recordings, compare Qwen and IndexTTS only if both runtimes are configured, and prepare Fallout 4 / Skyrim voice assets with user-supplied conversion tools.
+- Browse and audition existing recordings, preview/copy the exact saved input script (including vocal tags) from its same-name JSON sidecar, compare Qwen and IndexTTS when both are configured, and prepare Fallout 4 / Skyrim voice assets with user-supplied conversion tools.
+
+**Memory note:** IndexTTS/Qwen3 and a local LLM writer can both demand substantial system RAM and paging capacity. On the creator's Windows machine, closing DJ Writer before rendering IndexTTS resolved an access-violation crash. Run heavy generators sequentially if resources are tight.
 
 
-## Live engine diagnostics and unblocked GUI (alpha4 changes)
+## Live engine diagnostics and isolated runtimes
 
 - No pop-up command prompt when launching optional Qwen / Index Python on Windows.
 - On-screen engine stages, elapsed clock, persistent diagnostic logs, and Cancel.
-- Logs saved in the **experimental** AppData folder under `engine_logs`.
+- Logs saved under the existing v0.3 AppData folder in `engine_logs`.
 - Model-download and CPU loading can still be slow. The new generation limit is 45 minutes.
 - Existing engine environments and model weights are not changed.
 
-**Already have an alpha3 build?** Apply the alpha4 patch to that directory, then run
-`powershell -ExecutionPolicy Bypass -File .\REBUILD_ALPHA4_EXISTING.ps1`. It reuses
-`.venv-build` without pip-installing or recompressing a distribution archive.
-A Windows CPU generation run with real Qwen3 0.6B Base weights has succeeded. The larger Qwen model, IndexTTS, other GPUs, and clean-machine packaging still need independent validation.
+**Rebuilding an existing v0.3 checkout:** Use the normal Windows build commands below, or the retained `REBUILD_ALPHA4_EXISTING.ps1` helper to reuse an already installed `.venv-build` without reinstalling packages or redownloading weights. Qwen3-TTS Base 0.6B and IndexTTS 2.5 have both generated working audio on the creator's Windows machine. GPU-specific acceleration and clean-machine packaging still need testing in each target environment.
 
 ## Alpha 3: External Python import-path isolation
 
@@ -64,14 +63,14 @@ Qwen3-TTS and IndexTTS run in external Python environments. Alpha 2 prevents the
 
 ## Multi-engine features in v0.3.0
 
-- **Qwen3-TTS**, a supported engine integrated through the **Voice Engines** tab, with Base 0.6B/1.7B model choices; **IndexTTS 2.5** remains an experimental adapter.
+- **Qwen3-TTS** and **IndexTTS 2.5**, supported engines integrated through the **Voice Engines** tab. Qwen3 offers Base 0.6B/1.7B choices; IndexTTS supports configurable emotion and duration settings.
 - Independent per-engine Python interpreters. Neither optional engine is installed or loaded by the Chatterbox host at startup.
-- **Named character profiles** with per-engine model/language/device settings and shared reference voice. Saved to experimental-only JSON.
+- **Named character profiles** with per-engine model/language/device settings and shared reference voice. Saved to the independent v0.3 JSON storage.
 - **A/B comparison**, rendering the same passage with both configured optional engines sequentially; measured rendering time, WAV outputs, playback and integration with the existing Bethesda exporter.
 - **Separate app identity**, settings, installation, user data and export folder. Existing v0.2.x and v0.1.x voice references can be selected read-only.
 - Process cancellation, JSON sidecar metadata and built-in configuration/probe validation.
 
-**Scope:** Qwen3-TTS 0.6B Base has completed real Windows CPU speech generation and WAV export. The 1.7B model and experimental IndexTTS 2.5 adapter have not been validated with real weights on this Windows/AMD configuration. Protocol unit tests use a mock subprocess; they are not a substitute for real Windows compatibility and clean-install testing. CPU synthesis can be slower than accelerated inference. External engine libraries and their weights are not redistributed by this source package.
+**Scope:** Real Windows speech generation and WAV export have been reported working for Qwen3-TTS Base 0.6B and IndexTTS 2.5. Qwen3 1.7B and other acceleration configurations are not separately verified by this statement. Protocol unit tests still use a mock subprocess and do not replace clean-install/hardware testing. CPU synthesis can be slower than accelerated inference. External engine libraries and their weights are not redistributed.
 
 Read **[OPTIONAL_ENGINES.md](OPTIONAL_ENGINES.md)** before setting up extra models. It includes the official upstream links, Windows installation scripts and license warnings.
 
@@ -79,22 +78,22 @@ Read **[OPTIONAL_ENGINES.md](OPTIONAL_ENGINES.md)** before setting up extra mode
 
 - Chatterbox Nano, Turbo, Original English and Multilingual V3, unchanged Narration Studio generation pipeline.
 - Source text import/export, markup (`[pause]`, `[rate]`, `[volume]`, `[emphasis]`) in Chatterbox narration, WAV/MP3, batch queue.
-- Persistent saved voice references and an Export Library with playback of older recordings.
+- Persistent saved voice references and an Export Library with playback of older recordings, script preview and Copy Script from matching JSON metadata.
 - Bethesda project mappings, WAV/LIP/XWM/FUZ production, and optional direct game/mod installation using locally supplied conversion tools. Game plugin files are never edited.
 - Dark-green branded PyQt6 GUI, searchable Help center, About/Credits/Diagnostics, and Windows frozen runtime & Qt smoke tests.
 
 ## Separate environments and data
 
-| | Previous stable v0.2.4 | Separate v0.3.0-alpha4 build |
+| | Previous stable v0.2.4 | v0.3.0 multi-engine build |
 |---|---|---|
 | Executable | `PlaguesVoiceStudio024.exe` | `PlaguesVoiceStudio030Experimental.exe` |
 | Data | `%LOCALAPPDATA%\PlaguesVoiceStudio-v021` | `%LOCALAPPDATA%\PlaguesVoiceStudio-v030-Experimental` |
 | Settings | `KaotickJay/PlaguesVoiceStudio021` | `KaotickJay/PlaguesVoiceStudio030Experimental` |
-| Windows installation | Stable app folder | `Plague's Voice Studio 0.3 Experimental` |
+| Windows installation | Stable app folder | `Plague's Voice Studio 0.3` (existing installation directory retained) |
 | Voices | Writable stable v0.2.x | New imports writable; stable v0.2.x and v0.1.x read-only |
 | Models | Chatterbox | Same Chatterbox core, optional Qwen/Index in separate Python processes |
 
-Stable Bethesda project profiles are **not automatically imported**, preventing modifications to the stable data store. Recreate experimental mappings or manually back up/import compatible profiles only after verifying them.
+Stable Bethesda project profiles are **not automatically imported**, preventing modifications to the stable data store. Recreate v0.3 mappings or manually back up/import compatible profiles only after verifying them.
 
 ## Building on Windows
 
@@ -113,13 +112,13 @@ The result is `dist\PlaguesVoiceStudio030Experimental\PlaguesVoiceStudio030Exper
 
 To preview source UI with an already prepared `.venv-build` environment, run `PREVIEW_GUI.bat`. A source-code change does not update an existing EXE; rebuilding is required.
 
-Qwen3-TTS and the experimental IndexTTS 2.5 adapter use separately installed Python runtimes, following `OPTIONAL_ENGINES.md`. The application does not install their packages automatically. Use **Voice Engines → Test selected engine** before generating. This checks imports; actual synthesis requires installed model weights. Downloads may be large.
+Qwen3-TTS and IndexTTS 2.5 use separately installed Python runtimes, following `OPTIONAL_ENGINES.md`. The application does not install their packages automatically. Use **Voice Engines → Test selected engine** before generating. This checks imports; actual synthesis requires installed model weights. Downloads may be large.
 
 ## Testing status
 
-The Python source and protocol are unit-tested in a Linux container without PyQt6 or model weights. Separately, Qwen3-TTS 0.6B Base successfully generated speech and saved WAV audio on the user's Windows CPU setup. This does **not** establish full Windows GUI regression coverage, clean-machine installation, AMD GPU acceleration, 1.7B/IndexTTS inference, or Bethesda in-game compatibility. The Windows build uses a frozen Qt smoke test which must pass before installers are emitted.
+The Python source and protocol have automated tests, and the creator has verified live Windows narration with Chatterbox, Qwen3-TTS and IndexTTS 2.5. This does **not** claim universal hardware support, Qwen3 1.7B validation, AMD GPU acceleration or Bethesda in-game compatibility. The Windows build runs a frozen Qt smoke test before packaging.
 
-**Compatibility note:** Existing v0.3.0-alpha4 executable names, settings IDs and user-data folders still contain `Experimental` for compatibility with installed engine runtimes and saved voices. Renaming the on-screen engine tab does not move user data or change the release version. Qwen3-TTS 0.6B Base has been validated; the complete application still requires release testing.
+**Compatibility note:** Existing v0.3 executable filenames, settings identifiers and user-data folders still contain `Experimental` as a legacy technical identifier, **not** as a product status. Those paths have deliberately not been renamed, so existing voice references, installed engines, profiles and settings remain discoverable. The visible application and installer version is 0.3.0.
 
 ## Model Manager: install models from the GUI
 
@@ -132,7 +131,7 @@ Choose a model, review its local status and select **Download selected model**. 
 
 **Where files go:** Chatterbox weights are saved in the current user's application data under `models/<model-id>`, and Narration Studio automatically prefers validated downloaded weights to bundled files. Qwen weights go into the Hugging Face cache associated with the selected Qwen Python interpreter. **Check Qwen cache** detects a cached snapshot; only an actual generation confirms model inference. Existing Qwen caches are reused.
 
-**Qwen runtime remains separate:** The Model Manager downloads model weights but does not install Python 3.12, `qwen-tts`, or a compatible PyTorch build. Configure the Qwen interpreter under **Voice Engines** first. IndexTTS 2.5 stays experimental, outside the managed model list. No model is silently downloaded merely by opening Model Manager. Model downloads require network access and enough free disk space.
+**Qwen runtime remains separate:** The Model Manager downloads model weights but does not install Python 3.12, `qwen-tts`, or a compatible PyTorch build. Configure the Qwen interpreter under **Voice Engines** first. IndexTTS 2.5 is supported through Voice Engines but remains outside the managed model list. No model is silently downloaded merely by opening Model Manager. Model downloads require network access and enough free disk space.
 
 ## Support Project Development
 
