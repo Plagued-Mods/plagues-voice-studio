@@ -35,6 +35,12 @@ LicenseFile=LICENSE
 Source: "dist\PlaguesVoiceStudio030Experimental\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
 
+[InstallDelete]
+; Existing 0.3 installations may have shortcuts with the former preview label.
+; Keep the same AppId and installation path so application data is preserved.
+Type: files; Name: "{group}\\Plague's Voice Studio 0.3 Experimental.lnk"
+Type: files; Name: "{autodesktop}\\Plague's Voice Studio 0.3 Experimental.lnk"
+
 [Icons]
 Name: "{group}\Plague's Voice Studio 0.3"; Filename: "{app}\{#AppExeName}"
 Name: "{autodesktop}\Plague's Voice Studio 0.3"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
