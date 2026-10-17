@@ -34,7 +34,7 @@
 
 ## Automatic checks
 
-The Windows build performs both frozen-runtime and frozen-GUI smoke tests before packaging. The **GUI smoke test now exercises real Export Library widgets**, creates a tiny synthetic WAV and matching JSON, verifies read-only preview and clipboard copy, then verifies missing-metadata behavior. Existing Python unit tests also exercise Chatterbox render-side JSON creation, numbered exports, and cancellation using a synthetic model.
+The Windows build first runs focused Chatterbox sidecar and Export Library regression tests, then performs both frozen-runtime and frozen-GUI smoke tests before packaging. The **GUI smoke test now exercises real Export Library widgets**, creates a tiny synthetic WAV and matching JSON, verifies read-only preview and clipboard copy, then verifies missing-metadata behavior. Existing Python unit tests also exercise Chatterbox render-side JSON creation, numbered exports, and cancellation using a synthetic model.
 
 These automated checks **do not replace one real Chatterbox synthesis** on the target Windows machine. That real generation and packaging check is the release blocker.
 
